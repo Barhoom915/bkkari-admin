@@ -1,0 +1,2 @@
+export type Order = { id:number; order_number:string; customer_name:string; customer_phone:string; governorate:string; total:number; status:string; payment_method:string|null; created_at:string; };
+export type Product = { id:number; name:string; price:number; capital_price?:number; stock_quantity:number; is_available:boolean; is_featured:boolean; is_bestseller:boolean; is_new:boolean; gift_box:boolean; gift_mouse:boolean; gift_bag:boolean; gift_software_pack:boolean; };
