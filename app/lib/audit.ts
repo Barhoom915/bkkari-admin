@@ -1,0 +1,2 @@
+import { getServiceClient } from '@/app/lib/supabase-server';
+export async function logAdminActivity(adminId:string,action:string,entityType?:string,entityId?:string,description?:string,metadata?:Record<string,any>){try{await getServiceClient().rpc('log_admin_activity',{p_admin_user_id:adminId,p_action:action,p_entity_type:entityType||null,p_entity_id:entityId||null,p_description:description||null,p_metadata:metadata||{}})}catch{}}

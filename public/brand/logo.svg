@@ -1,0 +1,48 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#93c5fd" />
+      <stop offset="45%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#60a5fa" />
+      <stop offset="100%" stop-color="#1e40af" />
+    </linearGradient>
+  </defs>
+
+  <!-- خلفية دائرية سوداء فخمة -->
+  <circle cx="100" cy="100" r="96" fill="#ffffff" />
+  <circle cx="100" cy="100" r="96" fill="none" stroke="url(#ringGrad)" stroke-width="2.5" />
+  <circle cx="100" cy="100" r="88" fill="none" stroke="#2563eb" stroke-opacity="0.3" stroke-width="1" />
+
+  <!-- خطوط دارة كهربائية زخرفية -->
+  <g stroke="#2563eb" stroke-opacity="0.35" stroke-width="1.5" fill="none">
+    <path d="M100 12 V30" />
+    <path d="M100 170 V188" />
+    <path d="M12 100 H30" />
+    <path d="M170 100 H188" />
+  </g>
+  <g fill="#2563eb" fill-opacity="0.6">
+    <circle cx="100" cy="30" r="2.5" />
+    <circle cx="100" cy="170" r="2.5" />
+    <circle cx="30" cy="100" r="2.5" />
+    <circle cx="170" cy="100" r="2.5" />
+  </g>
+
+  <!-- حرف B كمونوغرام ذهبي -->
+  <path
+    d="M74 56 H104 C116 56 125 64.5 125 75.5 C125 83 121 88.5 114.5 91.5
+       C123 94.5 128.5 101 128.5 110.5 C128.5 122.5 119 131 106 131 H74 V56 Z
+       M88 68.5 V89 H101 C107.5 89 111.5 85 111.5 78.5 C111.5 72.5 107.5 68.5 101 68.5 H88 Z
+       M88 100 V118.5 H103.5 C111 118.5 115.5 114 115.5 109 C115.5 103.5 111 100 103.5 100 H88 Z"
+    fill="url(#goldGrad)"
+  />
+
+  <!-- شرارة/صاروخ صغير يعبر فوق الحرف كلمسة الطاقة -->
+  <path
+    d="M118 52 L128 40 L136 44 L124 58 Z"
+    fill="#60a5fa"
+  />
+  <circle cx="130.5" cy="43" r="2" fill="#ffffff" />
+</svg>
