@@ -1,10 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import AdminShell from "./AdminShell";
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "لوحة تحكم NOVATEK",
-  description: "مركز الإدارة والتحليلات لمتجر NOVATEK",
+  description: "مركز العمليات والإدارة والتحليلات لمنظومة NOVATEK",
   robots: { index: false, follow: false },
 };
 
