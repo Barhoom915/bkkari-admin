@@ -14,6 +14,7 @@ const navItems = [
   { href: "/requests", label: "💻 طلبات المواقع" },
   { href: "/wallet-topups", label: "💰 تعبئة المحفظة" },
   { href: "/products", label: "🛍️ المنتجات" },
+  { href: "/comparison", label: "⚖️ مقارنة المنتجات" },
   { href: "/settings", label: "⚙️ إعدادات المتجر" },
   { href: "/rewards", label: "🎁 النقاط والإحالة" },
   { href: "/notifications", label: "🔔 الإشعارات" },
