@@ -76,7 +76,7 @@ async function getInventory() {
   });
   const push = envValue("NEXT_PUBLIC_VAPID_PUBLIC_KEY") && envValue("VAPID_PRIVATE_KEY") && envValue("VAPID_SUBJECT");
   const inventory = [
-    { id: "serpapi", name: "SerpApi", category: "بحث الويب", ...serp },
+    { ...serp },
     { id: "satofill", name: "SatoFill", category: "الخدمات الرقمية", configured: Boolean(envValue("SATOFILL_API_TOKEN")), envName: "SATOFILL_API_TOKEN", state: satofillProbe.ok ? "connected" : (envValue("SATOFILL_API_TOKEN") ? "error" : "missing"), latencyMs: satofillProbe.ms, checkedAt: new Date().toISOString(), data: satofillProbe.ok ? satofillProbe.data : null, error: satofillProbe.ok ? null : satofillProbe.error, detail: satofillProbe.ok ? "نجح استعلام الرصيد المباشر." : satofillProbe.error },
     { id: "supabase", name: "Supabase", category: "قاعدة البيانات والمصادقة", configured: Boolean(envValue("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY") && envValue("NEXT_PUBLIC_SUPABASE_URL") && envValue("NEXT_PUBLIC_SUPABASE_ANON_KEY")), envName: "Supabase URL + server key", state: supabaseProbe.ok ? "connected" : (envValue("SUPABASE_SECRET_KEY", "SUPABASE_SERVICE_ROLE_KEY") ? "error" : "missing"), latencyMs: supabaseProbe.ms, checkedAt: new Date().toISOString(), data: supabaseProbe.ok ? { reachable: true } : null, error: supabaseProbe.ok ? null : supabaseProbe.error, detail: supabaseProbe.ok ? "نجح فحص مصادقة الإدارة بقراءة آمنة من صفحة واحدة." : supabaseProbe.error },
     { id: "webpush", name: "Web Push", category: "الإشعارات", configured: Boolean(push), envName: "VAPID public/private/subject", state: push ? "configured" : "missing", detail: push ? "إعدادات VAPID موجودة؛ لم يتم إرسال إشعار تجريبي." : "إعدادات VAPID غير مكتملة." },
