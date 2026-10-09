@@ -180,3 +180,62 @@ body{background:radial-gradient(circle at 70% -10%,rgba(35,104,168,.13),transpar
 .admin-login-card h1{font-size:31px!important;letter-spacing:-1px!important}.login-kicker{color:#ff8a2b!important}.admin-login-card>p{line-height:1.9!important}.google-login-btn{height:56px!important;border-radius:16px!important;font-weight:900!important}.google-login-btn.danger{background:#2a1114!important;color:#ffb4b4!important;border-color:#6b2730!important}
 .admin-content{background:linear-gradient(180deg,#f7f9fc 0,#fff 260px)!important}
 @media(max-width:640px){.admin-login-card{padding:24px!important;border-radius:24px!important}.admin-login-card h1{font-size:26px!important}.login-logo-wrap{width:76px!important;height:76px!important;border-radius:22px!important}}
+
+/* ===== BKKARI TECH V70 — توحيد لوحة التحكم مع هوية المتجر ===== */
+:root{
+  --ink:#10233f;
+  --ink-soft:#64748b;
+  --blue:#2e8bd8;
+  --blue-deep:#2e8bd8;
+  --orange:#f0821e;
+  --orange-soft:#fff4e0;
+  --surface:#f4f7fb;
+  --line:#e4e9f1;
+  --bg-base:#ffffff;
+  --card:#ffffff;
+}
+body{background:#fff!important;color:var(--ink)!important}
+.admin-shell{background:#fff!important;color:var(--ink)!important}
+.admin-sidebar{background:#fff!important;border-left:1px solid var(--line)!important;box-shadow:-12px 0 35px rgba(15,42,74,.06)!important}
+.admin-brand{border-color:var(--line)!important}
+.admin-nav-item{color:var(--ink-soft)!important;background:#fff!important;border-color:transparent!important}
+.admin-nav-item:hover{color:var(--ink)!important;background:#f4f8fc!important;border-color:#dbe8f3!important;box-shadow:0 8px 24px rgba(15,42,74,.06)!important}
+.admin-nav-item.active{color:#fff!important;background:linear-gradient(135deg,#2e8bd8,#58a9e7)!important;border-color:#2e8bd8!important;box-shadow:0 8px 24px rgba(46,139,216,.18),inset 3px 0 0 #f0821e!important}
+.admin-logout{background:#fff!important;border-color:#ffd8c0!important;color:#c85b18!important}
+.admin-logout:hover{background:#fff7f1!important}
+.admin-content{background:#fff!important}
+.admin-global-search{background:#fff!important;border-color:var(--line)!important;box-shadow:0 8px 24px rgba(15,42,74,.05)!important}
+.admin-search-results{background:#fff!important;border-color:var(--line)!important}
+.admin-search-results a{border-color:var(--line)!important}
+.admin-search-results a:hover{background:var(--surface)!important}
+.admin-card,.admin-stat{background:#fff!important;border-color:var(--line)!important;box-shadow:0 10px 30px rgba(15,42,74,.055)!important}
+.admin-card:hover{border-color:#c9e2f4!important}
+.admin-stat:hover{box-shadow:0 18px 38px rgba(15,42,74,.09)!important}
+.admin-stat>span{background:#eef7ff!important;color:var(--blue)!important}
+.admin-stat b,.admin-card h2{color:var(--ink)!important}
+.admin-card input,.admin-card textarea,.admin-card select{background:var(--surface)!important;border-color:var(--line)!important;color:var(--ink)!important}
+.admin-card input:focus,.admin-card textarea:focus,.admin-card select:focus{border-color:var(--blue)!important;background:#fff!important;box-shadow:0 0 0 3px rgba(46,139,216,.10)!important}
+.admin-hero{background:linear-gradient(135deg,#f7fbff,#fff8f1)!important;border-color:var(--line)!important;box-shadow:0 18px 50px rgba(15,42,74,.08)!important}
+.admin-hero h1{color:var(--ink)!important}
+.admin-hero-orb{background:#fff!important;border-color:var(--line)!important;box-shadow:0 12px 30px rgba(15,42,74,.10)!important}
+.admin-action,.admin-link-btn{background:#fff!important;border-color:var(--line)!important;color:var(--ink)!important}
+.admin-action:hover:not(:disabled),.admin-link-btn:hover{background:#f4f8fc!important;border-color:#b9d9ee!important;color:var(--blue)!important}
+.admin-action-dark{background:var(--blue)!important;color:#fff!important;border-color:var(--blue)!important}
+.notification-admin-row{background:#fff!important;border-color:var(--line)!important}
+.api-info,.api-endpoint{background:#f7fbff!important;border-color:#d9e9f5!important}
+.api-info b,.api-endpoint b{color:var(--ink)!important}
+.api-endpoint code{background:#eaf5fd!important;color:var(--blue)!important}
+.admin-burger{background:#fff!important;border-color:var(--line)!important;color:var(--ink)!important;box-shadow:0 8px 22px rgba(15,42,74,.07)!important}
+.admin-burger i{background:var(--ink)!important}
+.mobile-menu-panel .admin-nav-item{background:#fff!important;border-color:var(--line)!important}
+.mobile-menu-panel .admin-nav-item:hover{background:#f4f8fc!important}
+.mobile-menu-panel .admin-nav-item.active{background:#eef7ff!important;border-color:#c9e2f4!important;color:var(--blue)!important;box-shadow:inset -3px 0 0 var(--blue)!important}
+/* تسجيل الدخول: نفس الهوية الفاتحة للمتجر */
+.admin-login-screen{background:radial-gradient(circle at 15% 10%,rgba(46,139,216,.12),transparent 30%),radial-gradient(circle at 90% 90%,rgba(240,130,30,.10),transparent 30%),#fff!important}
+.admin-login-card{background:rgba(255,255,255,.96)!important;border-color:var(--line)!important;box-shadow:0 25px 80px rgba(15,42,74,.10)!important;color:var(--ink)!important}
+.login-logo-wrap{background:#fff!important;border-color:var(--line)!important;box-shadow:0 18px 40px rgba(15,42,74,.10)!important}
+.admin-login-card h1{color:var(--ink)!important}
+.admin-login-card>p,.admin-login-card small{color:var(--ink-soft)!important}
+.google-login-btn{background:#fff!important;color:var(--ink)!important;border-color:var(--line)!important;box-shadow:0 8px 22px rgba(15,42,74,.06)!important}
+.login-kicker{color:var(--blue)!important}
+.login-loader{color:var(--ink-soft)!important}

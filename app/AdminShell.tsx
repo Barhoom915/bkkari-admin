@@ -21,7 +21,8 @@ const navItems = [
   { href: "/admins", label: "🛡️ المشرفون" },
   { href: "/users", label: "👥 المستخدمون" },
   { href: "/analytics", label: "📈 تحليل المبيعات" },
-  { href: "/api-settings", label: "🔌 API" },
+  { href: "/ai-analytics", label: "🤖 تحليلات الذكاء الاصطناعي" },
+  { href: "/api-settings", label: "🔌 API والتكاملات" },
   { href: "/alerts", label: "🚨 مركز التنبيهات" },
   { href: "/activity", label: "🧾 سجل النشاط" },
   { href: "/account", label: "👤 الحساب" },
@@ -85,7 +86,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }
 
   if (loading) {
-    return <div className="admin-login-screen"><div className="login-loader"><img src="/brand/bkkari-tech-logo.png" alt="Bkkari Tech"/><span>جاري تجهيز لوحة التحكم</span></div></div>;
+    return <div className="admin-login-screen"><div className="login-loader"><img src="/brand/novatek-logo.png" alt="Bkkari Tech"/><span>جاري تجهيز لوحة التحكم</span></div></div>;
   }
 
   if (!user || (!authorized && user.email !== ADMIN_EMAIL)) {
@@ -93,8 +94,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
       <div className="admin-login-screen">
         <div className="login-glow login-glow-one"/><div className="login-glow login-glow-two"/>
         <div className="admin-login-card">
-          <div className="login-logo-wrap"><img src="/brand/bkkari-tech-logo.png" alt="Bkkari Tech" /></div>
-          <span className="login-kicker">BKKARI TECH • ADMIN</span>
+          <div className="login-logo-wrap"><img src="/brand/novatek-logo.png" alt="Bkkari Tech" /></div>
+          <span className="login-kicker">NOVATEK • ADMIN</span>
           <h1>لوحة التحكم</h1>
           <p>{user ? `الحساب ${user.email} ما إله صلاحية وصول.` : "سجّل الدخول بحساب الإدارة للمتابعة"}</p>
           {!user ? <button onClick={handleLogin} className="google-login-btn"><span className="google-g">G</span><span>المتابعة باستخدام Google</span><span className="login-arrow">←</span></button> : <button onClick={handleLogout} className="google-login-btn danger">تسجيل الخروج</button>}
@@ -108,7 +109,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
     <div className="admin-shell flex min-h-screen">
       <aside className="admin-sidebar hidden w-64 shrink-0 sm:flex sm:flex-col">
         <div className="admin-brand flex items-center gap-2 border-b border-line p-5">
-          <img src="/brand/bkkari-tech-logo.png" alt="Bkkari Tech" className="h-8 w-8" />
+          <img src="/brand/novatek-logo.png" alt="Bkkari Tech" className="h-8 w-8" />
           <span className="gold-shine text-sm font-bold">لوحة التحكم</span>
         </div>
         <nav className="flex flex-col gap-1 p-3">
@@ -150,7 +151,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
           <button aria-label="إغلاق القائمة" onClick={()=>setMobileOpen(false)} className="absolute inset-0 bg-black/60" />
           <aside className="mobile-menu-panel absolute right-0 top-0 h-full w-[min(86vw,340px)] overflow-y-auto border-l border-line bg-[#070b12] p-4 shadow-2xl" dir="rtl">
             <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
-              <div className="flex items-center gap-2"><img src="/brand/bkkari-tech-logo.png" alt="Bkkari Tech" className="h-8 w-8"/><b className="gold-shine text-sm">لوحة التحكم</b></div>
+              <div className="flex items-center gap-2"><img src="/brand/novatek-logo.png" alt="Bkkari Tech" className="h-8 w-8"/><b className="gold-shine text-sm">لوحة التحكم</b></div>
               <button onClick={()=>setMobileOpen(false)} className="menu-close-btn" aria-label="إغلاق القائمة">✕</button>
             </div>
             <nav className="flex flex-col gap-1">{navItems.map(item=>{const badge=item.href==="/orders"?alerts.orders:item.href==="/requests"?alerts.requests:item.href==="/wallet-topups"?alerts.topups:item.href==="/notifications"?alerts.notifications:0;return <Link key={item.href} href={item.href} onClick={()=>setMobileOpen(false)} className={`admin-nav-item ${pathname===item.href?"active":""}`}><span>{item.label}</span>{badge>0&&<b className="admin-nav-badge">{badge>99?"99+":badge}</b>}</Link>})}</nav>
@@ -168,7 +169,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
               {![...(searchResults.orders||[]),...(searchResults.topups||[]),...(searchResults.requests||[]),...(searchResults.users||[])].length&&<div className="admin-search-empty">ما لقيت نتيجة مطابقة</div>}
             </div>}
           </div>
-          <div className="admin-topbar-user"><span>بكاري تيك</span><span className="admin-online-dot"/></div>
+          <div className="admin-topbar-user"><span>NOVATEK</span><span className="admin-online-dot"/></div>
         </div>
         <div key={pathname} className="admin-route-transition">{children}</div>
       </div>

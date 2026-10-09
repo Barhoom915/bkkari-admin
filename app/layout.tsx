@@ -3,8 +3,8 @@ import "./globals.css";
 import AdminShell from "./AdminShell";
 
 export const metadata: Metadata = {
-  title: "لوحة تحكم بكاري تيك",
-  description: "لوحة تحكم إدارية خاصة بمتجر Bkkari Tech",
+  title: "لوحة تحكم NOVATEK",
+  description: "مركز الإدارة والتحليلات لمتجر NOVATEK",
   robots: { index: false, follow: false },
 };
 
