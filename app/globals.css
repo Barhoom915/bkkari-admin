@@ -987,3 +987,109 @@ html[data-admin-theme="dark"] .admin-page [class*="border-"] {
   border-color: #343945 !important;
 }
 
+
+
+/* V72.0.8 — improve light-mode contrast across all admin pages */
+html[data-admin-theme="light"] {
+  color-scheme: light;
+  --ink: #111827;
+  --ink-soft: #374151;
+  --surface: #f9fafb;
+  --line: #d1d5db;
+  --bg-base: #ffffff;
+  --card: #ffffff;
+}
+html[data-admin-theme="light"] body,
+html[data-admin-theme="light"] .admin-shell,
+html[data-admin-theme="light"] .admin-content,
+html[data-admin-theme="light"] .admin-route-transition,
+html[data-admin-theme="light"] .admin-page {
+  color: #111827;
+}
+html[data-admin-theme="light"] .admin-shell [class*="text-gray-"],
+html[data-admin-theme="light"] .admin-page [class*="text-gray-"],
+html[data-admin-theme="light"] .admin-shell [class*="text-slate-"],
+html[data-admin-theme="light"] .admin-page [class*="text-slate-"],
+html[data-admin-theme="light"] .admin-shell [class*="text-zinc-"],
+html[data-admin-theme="light"] .admin-page [class*="text-zinc-"],
+html[data-admin-theme="light"] .admin-shell [class*="text-neutral-"],
+html[data-admin-theme="light"] .admin-page [class*="text-neutral-"],
+html[data-admin-theme="light"] .admin-shell .text-ink-soft,
+html[data-admin-theme="light"] .admin-page .text-ink-soft,
+html[data-admin-theme="light"] .admin-stat p,
+html[data-admin-theme="light"] .admin-stat small,
+html[data-admin-theme="light"] .admin-hero p,
+html[data-admin-theme="light"] .admin-topbar-user,
+html[data-admin-theme="light"] .admin-field-label,
+html[data-admin-theme="light"] .api-info span,
+html[data-admin-theme="light"] .api-endpoint small,
+html[data-admin-theme="light"] .admin-search-empty {
+  color: #374151 !important;
+}
+html[data-admin-theme="light"] .admin-stat b,
+html[data-admin-theme="light"] .admin-card h2,
+html[data-admin-theme="light"] .admin-hero h1,
+html[data-admin-theme="light"] .admin-shell h1,
+html[data-admin-theme="light"] .admin-page h1,
+html[data-admin-theme="light"] .admin-shell h2,
+html[data-admin-theme="light"] .admin-page h2,
+html[data-admin-theme="light"] .admin-shell label,
+html[data-admin-theme="light"] .admin-page label,
+html[data-admin-theme="light"] .admin-shell strong,
+html[data-admin-theme="light"] .admin-page strong,
+html[data-admin-theme="light"] .admin-shell td,
+html[data-admin-theme="light"] .admin-page td,
+html[data-admin-theme="light"] .admin-shell th,
+html[data-admin-theme="light"] .admin-page th {
+  color: #111827;
+}
+html[data-admin-theme="light"] .admin-shell input,
+html[data-admin-theme="light"] .admin-shell textarea,
+html[data-admin-theme="light"] .admin-shell select,
+html[data-admin-theme="light"] .admin-page input,
+html[data-admin-theme="light"] .admin-page textarea,
+html[data-admin-theme="light"] .admin-page select,
+html[data-admin-theme="light"] .admin-field {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+  border-color: #9ca3af !important;
+}
+html[data-admin-theme="light"] .admin-shell input::placeholder,
+html[data-admin-theme="light"] .admin-shell textarea::placeholder,
+html[data-admin-theme="light"] .admin-page input::placeholder,
+html[data-admin-theme="light"] .admin-page textarea::placeholder {
+  color: #4b5563 !important;
+  opacity: 1;
+}
+html[data-admin-theme="light"] .admin-burger {
+  background: #ffffff !important;
+  border-color: #9ca3af !important;
+  color: #111827 !important;
+}
+html[data-admin-theme="light"] .admin-burger i {
+  background: #111827 !important;
+  height: 3px !important;
+}
+html[data-admin-theme="light"] .menu-close-btn {
+  background: #ffffff !important;
+  border-color: #9ca3af !important;
+  color: #111827 !important;
+}
+html[data-admin-theme="light"] .admin-mobile-header {
+  background: rgba(255,255,255,.98) !important;
+  border-color: #d1d5db !important;
+}
+html[data-admin-theme="light"] .api-info,
+html[data-admin-theme="light"] .api-endpoint {
+  background: #ffffff !important;
+  border-color: #d1d5db !important;
+}
+html[data-admin-theme="light"] .api-info b,
+html[data-admin-theme="light"] .api-endpoint b,
+html[data-admin-theme="light"] .api-endpoint small {
+  color: #111827 !important;
+}
+html[data-admin-theme="light"] .admin-shell [class*="text-"] svg,
+html[data-admin-theme="light"] .admin-page [class*="text-"] svg {
+  opacity: 1;
+}
