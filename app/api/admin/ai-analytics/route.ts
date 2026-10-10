@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
     const { data: limitRows, error: limitError } = await db
       .from("ai_usage_limits")
-      .select("user_id,day_key,month_key,daily_count,monthly_count,minute_count,updated_at")
+      .select("user_id,day_key,month_key,daily_count,monthly_count,minute_count,minute_started_at,updated_at")
       .order("updated_at", { ascending: false })
       .limit(500);
 
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
         dailyLimit: 30,
         monthlyUsed: r.month_key === new Date().toISOString().slice(0, 7) + "-01" ? Number(r.monthly_count || 0) : 0,
         monthlyLimit: 300,
-        minuteUsed: Number(r.minute_count || 0),
+        minuteUsed: Date.now() - new Date(r.minute_started_at).getTime() < 60_000 ? Number(r.minute_count || 0) : 0,
         minuteLimit: 6,
         updatedAt: r.updated_at,
       })),
