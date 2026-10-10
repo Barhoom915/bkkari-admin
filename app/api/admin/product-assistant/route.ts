@@ -3,46 +3,159 @@ import { getAdminSession } from '@/app/lib/supabase-server';
 
 export const runtime = 'nodejs';
 
+type ProviderResult = { provider: string; response: Response; parse: (data: any) => string | undefined };
+
+function openAIProvider(args: {
+  provider: string; url: string; key: string; model: string;
+  headers?: Record<string, string>; prompt: string;
+}): Promise<ProviderResult> {
+  return fetch(args.url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${args.key}`,
+      'Content-Type': 'application/json',
+      ...args.headers,
+    },
+    body: JSON.stringify({
+      model: args.model,
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: 'Return valid JSON only. Do not invent facts.' },
+        { role: 'user', content: args.prompt },
+      ],
+    }),
+    cache: 'no-store',
+  }).then(response => ({
+    provider: args.provider,
+    response,
+    parse: (data: any) => data.choices?.[0]?.message?.content,
+  }));
+}
+
+async function getProviders(prompt: string): Promise<Array<() => Promise<ProviderResult>>> {
+  const providers: Array<() => Promise<ProviderResult>> = [];
+  const groq = process.env.GROQ_API_KEY;
+  const openrouter = process.env.OPENROUTER_API_KEY;
+  const gemini = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+  // Ashna is supported only when its account provides an OpenAI-compatible API endpoint.
+  const ashnaKey = process.env.ASHNA_API_KEY;
+  const ashnaBase = process.env.ASHNA_BASE_URL?.replace(/\/+$/, '');
+  const ashnaModel = process.env.ASHNA_PRODUCT_MODEL || process.env.ASHNA_MODEL;
+
+  if (groq) providers.push(() => openAIProvider({
+    provider: 'Groq',
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    key: groq,
+    model: process.env.GROQ_PRODUCT_MODEL || 'llama-3.3-70b-versatile',
+    prompt,
+  }));
+  if (openrouter) providers.push(() => openAIProvider({
+    provider: 'OpenRouter',
+    url: 'https://openrouter.ai/api/v1/chat/completions',
+    key: openrouter,
+    model: process.env.OPENROUTER_PRODUCT_MODEL || 'openai/gpt-4o-mini',
+    headers: {
+      'HTTP-Referer': process.env.NEXT_PUBLIC_SITE_URL || 'https://vercel.app',
+      'X-Title': 'NOVATEK Admin',
+    },
+    prompt,
+  }));
+  if (gemini) providers.push(async () => {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(process.env.GEMINI_PRODUCT_MODEL || 'gemini-2.0-flash')}:generateContent`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': gemini },
+        body: JSON.stringify({
+          generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
+          contents: [{ parts: [{ text: prompt }] }],
+        }),
+        cache: 'no-store',
+      },
+    );
+    return {
+      provider: 'Gemini / Google AI Studio',
+      response,
+      parse: (data: any) => data.candidates?.[0]?.content?.parts?.map((part: any) => part.text || '').join(''),
+    };
+  });
+  if (ashnaKey && ashnaBase && ashnaModel) providers.push(() => openAIProvider({
+    provider: 'Ashna',
+    url: `${ashnaBase}/chat/completions`,
+    key: ashnaKey,
+    model: ashnaModel,
+    prompt,
+  }));
+  return providers;
+}
+
 export async function POST(request: Request) {
   const user = await getAdminSession();
   if (!user) return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+
   try {
     const body = await request.json();
     const action = String(body.action || 'review');
     const product = body.product || {};
-    const facts = Object.fromEntries(['name','brand','model','category','cpu','ram','storage','gpu','screen_size','screen_resolution','condition','battery_health','price','warranty_days','description','features'].map(k => [k, product[k] ?? '']));
-    if (!String(facts.name || '').trim()) return NextResponse.json({ error: 'اكتب اسم المنتج أولاً حتى أقدر أساعدك بدقة.' }, { status: 400 });
+    const facts = Object.fromEntries(
+      ['name','brand','model','category','cpu','ram','storage','gpu','screen_size','screen_resolution','condition','battery_health','price','warranty_days','description','features']
+        .map(key => [key, product[key] ?? '']),
+    );
+    if (!String(facts.name || '').trim()) {
+      return NextResponse.json({ error: 'اكتب اسم المنتج أولاً حتى أقدر أساعدك بدقة.' }, { status: 400 });
+    }
+
     const prompt = `أنت مساعد كتابة منتجات لمتجر سوري اسمه NOVATEK. اكتب عربية واضحة واحترافية بنبرة متجر تقنية موثوقة. التزم بالمعلومات المقدمة فقط: ممنوع اختراع مواصفات أو ضمان أو أداء أو ادعاءات. إذا نقصت معلومة اذكرها ضمن missing ولا تخمن. لا تغيّر السعر. أعد JSON صالحاً فقط بالشكل {"name":"...","description":"...","features":["..."],"missing":["..."],"issues":["..."]}. action=${action}. إذا كان action=description أنشئ وصفاً فقط اعتماداً على الحقائق. إذا كان action=features رتّب الميزات فقط اعتماداً على الحقائق. إذا كان action=review صحح صياغة الاسم والوصف والميزات ونبه إلى النواقص والتعارضات، ولا تضف مواصفات غير مذكورة. البيانات: ${JSON.stringify(facts)}`;
-    let response: Response | null = null;
-    let provider = '';
-    const groq = process.env.GROQ_API_KEY;
-    const openrouter = process.env.OPENROUTER_API_KEY;
-    const gemini = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    if (groq) {
-      provider = 'Groq';
-      response = await fetch('https://api.groq.com/openai/v1/chat/completions', { method:'POST', headers:{Authorization:`Bearer ${groq}`,'Content-Type':'application/json'}, body:JSON.stringify({model:process.env.GROQ_PRODUCT_MODEL || 'llama-3.3-70b-versatile',temperature:0.2,response_format:{type:'json_object'},messages:[{role:'system',content:'Return valid JSON only.'},{role:'user',content:prompt}]}), cache:'no-store' });
-    } else if (openrouter) {
-      provider = 'OpenRouter';
-      response = await fetch('https://openrouter.ai/api/v1/chat/completions', { method:'POST', headers:{Authorization:`Bearer ${openrouter}`,'Content-Type':'application/json','HTTP-Referer':process.env.NEXT_PUBLIC_SITE_URL || 'https://vercel.app','X-Title':'NOVATEK Admin'}, body:JSON.stringify({model:process.env.OPENROUTER_PRODUCT_MODEL || 'openai/gpt-4o-mini',temperature:0.2,response_format:{type:'json_object'},messages:[{role:'system',content:'Return valid JSON only.'},{role:'user',content:prompt}]}), cache:'no-store' });
-    } else if (gemini) {
-      provider = 'Gemini';
-      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(gemini)}`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({generationConfig:{responseMimeType:'application/json',temperature:0.2},contents:[{parts:[{text:prompt}]}]}),cache:'no-store'});
-    } else {
-      return NextResponse.json({error:'ما لقيت مفتاحاً متاحاً للمساعد في بيئة الإدارة. أضف GROQ_API_KEY أو OPENROUTER_API_KEY أو GEMINI_API_KEY إلى Vercel ثم أعد النشر.'}, {status:503});
+
+    const providers = await getProviders(prompt);
+    if (!providers.length) {
+      return NextResponse.json({
+        error: 'ما لقيت مفاتيح AI متاحة في بيئة الإدارة. أضف GROQ_API_KEY أو OPENROUTER_API_KEY أو GEMINI_API_KEY إلى Environment Variables في Vercel، ثم أعد النشر.',
+      }, { status: 503 });
     }
-    if (!response.ok) {
-      const details = await response.text();
-      console.error(`[product-assistant:${provider}]`, response.status, details.slice(0,500));
-      return NextResponse.json({error:`فشل طلب المساعد عبر ${provider} (HTTP ${response.status}). تحقق من المفتاح وحدود الاستخدام.`},{status:502});
+
+    const failures: string[] = [];
+    for (let providerIndex = 0; providerIndex < providers.length; providerIndex++) {
+      const createRequest = providers[providerIndex];
+      let result: ProviderResult;
+      try {
+        result = await createRequest();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Network error';
+        failures.push(`المزوّد رقم ${providerIndex + 1}: تعذر الاتصال (${message.slice(0, 120)})`);
+        continue;
+      }
+
+      if (!result.response.ok) {
+        const details = (await result.response.text()).slice(0, 350);
+        console.error(`[product-assistant:${result.provider}] HTTP ${result.response.status}`, details);
+        failures.push(`${result.provider}: HTTP ${result.response.status}`);
+        // Try the next configured provider for unavailable model, auth, quota, or transient failures.
+        continue;
+      }
+
+      try {
+        const data: any = await result.response.json();
+        const raw = result.parse(data);
+        if (!raw) {
+          failures.push(`${result.provider}: empty response`);
+          continue;
+        }
+        const parsed = JSON.parse(raw);
+        return NextResponse.json({ data: { ...parsed, provider: result.provider, fallbackUsed: failures.length > 0 } });
+      } catch (error) {
+        console.error(`[product-assistant:${result.provider}] invalid response`, error);
+        failures.push(`${result.provider}: invalid response`);
+      }
     }
-    const data:any = await response.json();
-    const raw = provider === 'Gemini' ? data.candidates?.[0]?.content?.parts?.[0]?.text : data.choices?.[0]?.message?.content;
-    if (!raw) return NextResponse.json({error:`لم يرجع ${provider} نتيجة قابلة للقراءة.`},{status:502});
-    let result:any;
-    try { result = JSON.parse(raw); } catch { return NextResponse.json({error:'رجع المساعد نتيجة غير صالحة. جرّب مرة أخرى.'},{status:502}); }
-    return NextResponse.json({data:{...result,provider}});
+
+    return NextResponse.json({
+      error: `تعذر توليد النتيجة من مزوّدي AI المُعدّين. ${failures.join('؛ ')}`,
+      providersTried: providers.length,
+    }, { status: 502 });
   } catch (error) {
     console.error('[product-assistant]', error);
-    return NextResponse.json({error:'تعذر تشغيل مساعد المنتجات حالياً.'},{status:500});
+    return NextResponse.json({ error: 'تعذر تشغيل مساعد المنتجات حالياً.' }, { status: 500 });
   }
 }
