@@ -39,6 +39,21 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const [alerts, setAlerts] = useState({ orders: 0, requests: 0, topups: 0, notifications: 0, total: 0 });
   const [globalSearch, setGlobalSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any>(null);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("novatek-admin-theme");
+    const next = saved === "light" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.dataset.adminTheme = next;
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.dataset.adminTheme = next;
+    window.localStorage.setItem("novatek-admin-theme", next);
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -186,7 +201,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
               {![...(searchResults.orders||[]),...(searchResults.topups||[]),...(searchResults.requests||[]),...(searchResults.users||[])].length&&<div className="admin-search-empty">ما لقيت نتيجة مطابقة</div>}
             </div>}
           </div>
-          <div className="admin-topbar-user"><span>NOVATEK</span><span className="admin-online-dot"/></div>
+          <div className="admin-topbar-user"><button type="button" className="admin-theme-toggle" onClick={toggleTheme} aria-label={theme === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"} title={theme === "dark" ? "الوضع الفاتح" : "الوضع الداكن"}>{theme === "dark" ? "☀️ فاتح" : "🌙 داكن"}</button><span>NOVATEK</span><span className="admin-online-dot"/></div>
         </div>
         <div key={pathname} className="admin-route-transition">{children}</div>
       </div>
