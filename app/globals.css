@@ -524,3 +524,40 @@ html[data-admin-theme="light"] .admin-nav-item{color:#48372a!important}
 html[data-admin-theme="light"] .admin-nav-item.active{background:rgba(249,115,22,.14)!important;color:#c2410c!important}
 html[data-admin-theme="light"] .mobile-menu-panel{background:rgba(255,250,246,.96)!important;color:#211710!important}
 @media(prefers-reduced-motion:reduce){.admin-theme-toggle{transition:none}}
+
+
+/* NOVATEK Liquid Glass accessibility fixes */
+.stock-alert {
+  background: linear-gradient(135deg, rgba(255,255,255,.94), rgba(255,247,239,.86)) !important;
+  color: #26180f !important;
+  border: 1px solid rgba(249,115,22,.24) !important;
+  box-shadow: 0 12px 30px rgba(72,39,16,.07), inset 0 1px 0 rgba(255,255,255,.9) !important;
+  backdrop-filter: blur(18px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+}
+.stock-alert b, .stock-alert p { color: #38271c !important; }
+.stock-alert strong {
+  color: #b45309 !important;
+  background: rgba(249,115,22,.12) !important;
+  border: 1px solid rgba(249,115,22,.2) !important;
+}
+.stock-alert.danger {
+  background: linear-gradient(135deg, rgba(255,255,255,.97), rgba(255,241,238,.92)) !important;
+  border-color: rgba(220,38,38,.25) !important;
+}
+.stock-alert.danger strong { color: #b91c1c !important; background: #fee2e2 !important; }
+.mobile-menu-panel {
+  background: rgba(255,250,246,.88) !important;
+  color: #271a12 !important;
+  border-color: rgba(249,115,22,.2) !important;
+  backdrop-filter: blur(28px) saturate(155%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(155%) !important;
+  box-shadow: -18px 0 55px rgba(66,36,15,.12), inset 1px 0 0 rgba(255,255,255,.85) !important;
+}
+.mobile-menu-panel .admin-nav-item { color: #49372a !important; }
+.mobile-menu-panel .admin-nav-item.active {
+  color: #b94708 !important;
+  background: rgba(249,115,22,.13) !important;
+  border-color: rgba(249,115,22,.24) !important;
+}
+.admin-mobile-overlay > button[aria-label="إغلاق القائمة"] { background: rgba(255,248,241,.42) !important; }
