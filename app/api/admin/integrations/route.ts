@@ -72,7 +72,7 @@ async function getInventory() {
     { id: "groq", name: "Groq", category: "ذكاء اصطناعي", vars: ["GROQ_API_KEY"], note: "تم العثور على مفتاح Groq؛ جارٍ فحص endpoint الموديلات." },
     { id: "openrouter", name: "OpenRouter", category: "ذكاء اصطناعي", vars: ["OPENROUTER_API_KEY"], note: "تم العثور على مفتاح OpenRouter؛ سيتم عرض معلومات الحساب التي يعيدها endpoint الرسمي." },
     { id: "tavily", name: "Tavily", category: "بحث ومقارنة", vars: ["TAVILY_API_KEY"], note: "تم العثور على مفتاح Tavily. لم يتم إرسال بحث مدفوع لمجرد الفحص." },
-    { id: "syrimarket", name: "SyriMarket", category: "بحث ومقارنة ومنتجات رقمية", vars: ["SYRIMARKET_API_KEY", "SYRIMARKET_API_URL"], note: "تم العثور على إعداد SyriMarket؛ حالة الرصيد والاستخدام تعتمد على API المزود." },
+    { id: "syrimarket", name: "SyriMarket", category: "بحث ومقارنة ومنتجات رقمية", vars: ["SYRIMARKET_API_TOKEN", "SYRIMARKET_API_KEY", "SYRIMARKET_API_URL"], note: "تم العثور على إعداد SyriMarket؛ حالة الرصيد والاستخدام تعتمد على API المزود." },
     { id: "sw-games", name: "SW-Games", category: "المنتجات والخدمات الرقمية", vars: ["SW_GAMES_API_KEY", "SW_GAMES_API_TOKEN"], note: "خدمة قادمة. لن تظهر متصلة قبل إعدادها وإجراء فحص فعلي." },
     { id: "openai", name: "OpenAI", category: "ذكاء اصطناعي", vars: ["OPENAI_API_KEY"], note: "وجود المفتاح لا يكشف الفوترة. تفاصيل الاستخدام تحتاج صلاحيات وواجهة Usage/Billing المناسبة للحساب." },
     { id: "anthropic", name: "Anthropic", category: "ذكاء اصطناعي", vars: ["ANTHROPIC_API_KEY"], note: "المفتاح مضبوط؛ بيانات الفوترة لا تتوفر لكل المفاتيح عبر واجهة الاستخدام العادية." },
@@ -91,7 +91,7 @@ async function getInventory() {
     if (p.id === "syrimarket") {
       const base = (envValue("SYRIMARKET_API_URL")?.value || "https://api.syrimarket.com").replace(/\/+$/, "");
       const probe = await timed(async () => {
-        const headers = { Authorization: `Bearer ${found.value}`, Accept: "application/json" };
+        const headers = { Authorization: `Bearer ${found.value}`, "api-token": found.value, Accept: "application/json" };
         const profileResponse = await fetch(`${base}/client/api/v1/profile`, { headers, cache: "no-store", signal: AbortSignal.timeout(9000) });
         const profile: any = await profileResponse.json().catch(() => ({}));
         if (!profileResponse.ok || profile.success === false) {
