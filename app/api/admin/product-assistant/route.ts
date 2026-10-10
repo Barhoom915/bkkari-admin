@@ -1,7 +1,30 @@
 import { NextResponse } from 'next/server';
-import { getAdminSession } from '@/app/lib/supabase-server';
+import { getAdminSession, getServiceClient } from '@/app/lib/supabase-server';
 
 export const runtime = 'nodejs';
+
+async function recordAiUsage(event: {
+  provider: string;
+  status: 'success' | 'failed';
+  latencyMs: number;
+  errorCode?: string;
+}) {
+  // Best-effort telemetry: analytics must never break the product assistant.
+  try {
+    const db = getServiceClient();
+    await db.from('ai_usage_events').insert({
+      feature: 'product_assistant',
+      provider: event.provider,
+      model: null,
+      status: event.status,
+      latency_ms: event.latencyMs,
+      error_code: event.errorCode?.slice(0, 120) || null,
+      cost_is_estimate: true,
+    });
+  } catch (error) {
+    console.warn('[product-assistant:analytics] unable to record event', error instanceof Error ? error.message : 'unknown error');
+  }
+}
 
 type ProviderResult = { provider: string; response: Response; parse: (data: any) => string | undefined };
 
@@ -123,11 +146,14 @@ export async function POST(request: Request) {
     for (let providerIndex = 0; providerIndex < providers.length; providerIndex++) {
       const createRequest = providers[providerIndex];
       let result: ProviderResult;
+      const providerStartedAt = Date.now();
       try {
         result = await createRequest();
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Network error';
-        failures.push(`${configuredNames[providerIndex] || `المزوّد رقم ${providerIndex + 1}`}: تعذر الاتصال (${message.slice(0, 120)})`);
+        const failedProvider = configuredNames[providerIndex] || `المزوّد رقم ${providerIndex + 1}`;
+        failures.push(`${failedProvider}: تعذر الاتصال (${message.slice(0, 120)})`);
+        await recordAiUsage({ provider: failedProvider, status: 'failed', latencyMs: Date.now() - providerStartedAt, errorCode: 'network_error' });
         continue;
       }
 
@@ -135,6 +161,7 @@ export async function POST(request: Request) {
         const details = (await result.response.text()).slice(0, 350);
         console.error(`[product-assistant:${result.provider}] HTTP ${result.response.status}`, details);
         failures.push(`${result.provider}: HTTP ${result.response.status}`);
+        await recordAiUsage({ provider: result.provider, status: 'failed', latencyMs: Date.now() - providerStartedAt, errorCode: `http_${result.response.status}` });
         // Try the next configured provider for unavailable model, auth, quota, or transient failures.
         continue;
       }
@@ -155,10 +182,12 @@ export async function POST(request: Request) {
           parsed.issues = Array.isArray(parsed.issues) ? parsed.issues.filter((x: any) => typeof x === 'string') : [];
           parsed.missing = Array.isArray(parsed.missing) ? parsed.missing.filter((x: any) => typeof x === 'string') : [];
         }
+        await recordAiUsage({ provider: result.provider, status: 'success', latencyMs: Date.now() - providerStartedAt });
         return NextResponse.json({ data: { ...parsed, provider: result.provider, fallbackUsed: failures.length > 0, failedProviders: failures } });
       } catch (error) {
         console.error(`[product-assistant:${result.provider}] invalid response`, error);
         failures.push(`${result.provider}: invalid response`);
+        await recordAiUsage({ provider: result.provider, status: 'failed', latencyMs: Date.now() - providerStartedAt, errorCode: 'invalid_response' });
       }
     }
 
