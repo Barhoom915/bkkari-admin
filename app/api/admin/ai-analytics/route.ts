@@ -28,11 +28,17 @@ export async function GET(request: Request) {
       return NextResponse.json({
         configured: false,
         schemaMissing: missing,
-        error: missing ? "جدول تحليلات الذكاء الاصطناعي غير موجود بعد. طبّق ترحيل V98.28 في Supabase أولاً." : "تعذر قراءة سجل الذكاء الاصطناعي.",
+        error: missing ? "جدول تحليلات الذكاء الاصطناعي غير موجود بعد. طبّق ترحيل V71 من مستودع الإدارة وترحيل V98.29 من مستودع المتجر على مشروع Supabase نفسه." : "تعذر قراءة سجل الذكاء الاصطناعي.",
         details: process.env.NODE_ENV === "development" ? error.message : undefined,
         days,
       }, { status: missing ? 200 : 500, headers: noStoreHeaders });
     }
+
+    const { data: limitRows, error: limitError } = await db
+      .from("ai_usage_limits")
+      .select("user_id,daily_count,monthly_count,minute_count,updated_at")
+      .order("updated_at", { ascending: false })
+      .limit(500);
 
     const rows = data || [];
     const sum = (key: string) => rows.reduce((n: number, row: any) => n + Number(row[key] ?? 0), 0);
@@ -69,6 +75,17 @@ export async function GET(request: Request) {
         averageLatencyMs: (() => { const measured = rows.filter((r: any) => r.latency_ms != null); return measured.length ? Math.round(measured.reduce((n: number, r: any) => n + Number(r.latency_ms), 0) / measured.length) : 0; })(),
       },
       providers: [...providers.values()].sort((a, b) => b.requests - a.requests),
+      userLimits: limitError ? [] : (limitRows || []).map((r: any) => ({
+        userId: r.user_id,
+        dailyUsed: Number(r.daily_count || 0),
+        dailyLimit: 30,
+        monthlyUsed: Number(r.monthly_count || 0),
+        monthlyLimit: 300,
+        minuteUsed: Number(r.minute_count || 0),
+        minuteLimit: 6,
+        updatedAt: r.updated_at,
+      })),
+      userLimitsConfigured: !limitError,
       events: rows,
       note: "التكلفة المعروضة هي مجموع التكاليف المسجلة فقط، وليست رصيد مزود الخدمة أو فاتورته الرسمية.",
     }, { headers: noStoreHeaders });
