@@ -14,8 +14,12 @@ const envValue = (...names: string[]) => {
 
 async function timed<T>(fn: () => Promise<T>) {
   const started = Date.now();
-  try { return { ok: true as const, ms: Date.now() - started, data: await fn() }; }
-  catch (error) { return { ok: false as const, ms: Date.now() - started, error: safeError(error) }; }
+  try {
+    const data = await fn();
+    return { ok: true as const, ms: Date.now() - started, data };
+  } catch (error) {
+    return { ok: false as const, ms: Date.now() - started, error: safeError(error) };
+  }
 }
 function safeError(error: unknown) {
   const raw = error instanceof Error ? error.message : "فشل الاتصال بالخدمة";
@@ -78,7 +82,7 @@ async function getInventory() {
   ];
   const knownOptional = await Promise.all(optional.map(async (p) => {
     const found = envValue(...p.vars);
-    if (!found) return { id: p.id, name: p.name, category: p.category, configured: false, envName: p.vars.join(" أو "), state: p.id === "sw-games" ? "planned" : "missing", detail: p.id === "sw-games" ? p.note : `لم يتم العثور على ${p.vars.join(" / ")} في بيئة لوحة الإدارة.` };
+    if (!found) return { id: p.id, name: p.name, category: p.category, configured: false, envName: p.vars.join(" أو "), state: p.id === "sw-games" ? "planned" : "missing", detail: p.id === "sw-games" ? p.note : `لم يتم العثور على ${p.vars.join(" / ")} في بيئة نشر لوحة الإدارة. هذا لا يعني أن الخدمة متوقفة في المتجر؛ بيئة المتجر والإدارة منفصلتان على Vercel. أضف المتغيرات هنا فقط إذا أردت فحصها من لوحة الإدارة.` };
     if (p.id === "google-ai") {
       const probe = await timed(async () => {
         const url = new URL("https://generativelanguage.googleapis.com/v1beta/models"); url.searchParams.set("key", found.value);
@@ -97,7 +101,7 @@ async function getInventory() {
       const probe = await timed(async () => { const response=await fetch("https://openrouter.ai/api/v1/key",{headers:{Authorization:`Bearer ${found.value}`},cache:"no-store",signal:AbortSignal.timeout(8000)});const body:any=await response.json().catch(()=>({}));if(!response.ok||body.error)throw new Error(body.error?.message||`OpenRouter HTTP ${response.status}`);const d=body.data||{};return {label:d.label??null,limit:d.limit??null,usage:d.usage??null,remaining:d.limit_remaining??null,isFreeTier:d.is_free_tier??null}; });
       return { id:p.id,name:p.name,category:p.category,configured:true,envName:found.name,state:probe.ok?"connected":"error",latencyMs:probe.ms,checkedAt:new Date().toISOString(),data:probe.ok?probe.data:null,error:probe.ok?null:probe.error,detail:probe.ok?"نجح فحص المفتاح وجلب معلومات الحد/الاستخدام المتاحة من OpenRouter.":probe.error };
     }
-    return { id: p.id, name: p.name, category: p.category, configured: true, envName: found.name, state: "configured", detail: p.note };
+    return { id: p.id, name: p.name, category: p.category, configured: true, envName: found.name, state: "configured", detail: `${p.note} تم العثور على الإعداد في بيئة الإدارة فقط؛ هذه الحالة لا تعني أن الاتصال تم اختباره أو أن الخدمة تعمل.` };
   }));
   const push = envValue("NEXT_PUBLIC_VAPID_PUBLIC_KEY") && envValue("VAPID_PRIVATE_KEY") && envValue("VAPID_SUBJECT");
   const inventory = [
