@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     const action = String(body.action || 'review');
     const product = body.product || {};
     const facts = Object.fromEntries(
-      ['name','brand','model','category','cpu','ram','storage','gpu','screen_size','screen_resolution','condition','battery_health','price','warranty_days','description','features']
+      ['name','brand','model','category','cpu','ram','storage','gpu','screen_size','screen_resolution','condition','battery_health','warranty_days','description','features']
         .map(key => [key, product[key] ?? '']),
     );
     if (!String(facts.name || '').trim()) {
@@ -163,7 +163,8 @@ export async function POST(request: Request) {
         const parsed = JSON.parse(cleaned);
         if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('AI response was not a JSON object');
         if (action === 'review') {
-          parsed.suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions.filter((item: any) => item && typeof item.field === 'string' && typeof item.reason === 'string').map((item: any) => ({ ...item, proposed: typeof item.proposed === 'string' ? item.proposed : '' })) : [];
+          const editableFields = new Set(['name','brand','model','category','cpu','ram','storage','gpu','screen_size','screen_resolution','condition','battery_health','description','features']);
+          parsed.suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions.filter((item: any) => item && editableFields.has(item.field) && typeof item.reason === 'string').map((item: any) => ({ ...item, proposed: typeof item.proposed === 'string' ? item.proposed : '' })) : [];
           parsed.issues = Array.isArray(parsed.issues) ? parsed.issues.filter((x: any) => typeof x === 'string') : [];
           parsed.missing = Array.isArray(parsed.missing) ? parsed.missing.filter((x: any) => typeof x === 'string') : [];
         }
