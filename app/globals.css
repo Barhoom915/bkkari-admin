@@ -909,3 +909,81 @@ html, body, #__next {
 .admin-shell [class*="border-"], .admin-page [class*="border-"] {
   border-color: #e5e7eb !important;
 }
+
+/* Theme cascade fix: explicit dark tokens and surfaces must win over legacy light overrides. */
+html[data-admin-theme="dark"] {
+  color-scheme: dark;
+  --ink: #f3f4f6;
+  --ink-soft: #a1a1aa;
+  --surface: #181b22;
+  --line: #343945;
+  --bg-base: #101216;
+  --card: #1b1f27;
+}
+html[data-admin-theme="dark"] body,
+html[data-admin-theme="dark"] #__next {
+  background: #101216 !important;
+  color: #f3f4f6 !important;
+}
+html[data-admin-theme="dark"] .admin-shell,
+html[data-admin-theme="dark"] .admin-page,
+html[data-admin-theme="dark"] .admin-content,
+html[data-admin-theme="dark"] .admin-main,
+html[data-admin-theme="dark"] .admin-route-transition {
+  background-color: #101216 !important;
+  color: #f3f4f6 !important;
+}
+html[data-admin-theme="dark"] .admin-shell .admin-card,
+html[data-admin-theme="dark"] .admin-page .admin-card,
+html[data-admin-theme="dark"] .admin-shell .admin-stat,
+html[data-admin-theme="dark"] .admin-page .admin-stat,
+html[data-admin-theme="dark"] .admin-shell .admin-list-row,
+html[data-admin-theme="dark"] .admin-page .admin-list-row,
+html[data-admin-theme="dark"] .admin-shell .admin-search-results,
+html[data-admin-theme="dark"] .admin-page .admin-search-results,
+html[data-admin-theme="dark"] .admin-shell .admin-chart-heading,
+html[data-admin-theme="dark"] .admin-page .admin-chart-heading,
+html[data-admin-theme="dark"] .admin-shell .admin-range-control,
+html[data-admin-theme="dark"] .admin-page .admin-range-control,
+html[data-admin-theme="dark"] .admin-shell .admin-refresh-stamp,
+html[data-admin-theme="dark"] .admin-page .admin-refresh-stamp {
+  background: #1b1f27 !important;
+  background-image: none !important;
+  color: #f3f4f6 !important;
+  border-color: #343945 !important;
+}
+html[data-admin-theme="dark"] .admin-shell [class*="text-white"],
+html[data-admin-theme="dark"] .admin-page [class*="text-white"],
+html[data-admin-theme="dark"] .admin-shell [class*="text-gray-"],
+html[data-admin-theme="dark"] .admin-page [class*="text-gray-"],
+html[data-admin-theme="dark"] .admin-shell [class*="text-slate-"],
+html[data-admin-theme="dark"] .admin-page [class*="text-slate-"],
+html[data-admin-theme="dark"] .admin-shell [class*="text-zinc-"],
+html[data-admin-theme="dark"] .admin-page [class*="text-zinc-"],
+html[data-admin-theme="dark"] .admin-stat p,
+html[data-admin-theme="dark"] .admin-stat small,
+html[data-admin-theme="dark"] .admin-hero p {
+  color: #c4c8d0 !important;
+}
+html[data-admin-theme="dark"] .admin-shell input,
+html[data-admin-theme="dark"] .admin-shell textarea,
+html[data-admin-theme="dark"] .admin-shell select,
+html[data-admin-theme="dark"] .admin-page input,
+html[data-admin-theme="dark"] .admin-page textarea,
+html[data-admin-theme="dark"] .admin-page select {
+  background-color: #151820 !important;
+  color: #f3f4f6 !important;
+  border-color: #343945 !important;
+}
+html[data-admin-theme="dark"] .admin-sidebar .admin-nav-item.active,
+html[data-admin-theme="dark"] .mobile-menu-panel .admin-nav-item.active,
+html[data-admin-theme="dark"] .admin-theme-toggle {
+  background: #382416 !important;
+  color: #fdba74 !important;
+  border-color: #7c3f16 !important;
+}
+html[data-admin-theme="dark"] .admin-shell [class*="border-"],
+html[data-admin-theme="dark"] .admin-page [class*="border-"] {
+  border-color: #343945 !important;
+}
+
