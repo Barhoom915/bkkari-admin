@@ -853,42 +853,59 @@ html, body, #__next {
 .admin-stat b { font-weight: 850 !important; }
 
 
-/* NOVATEK BRAND SYSTEM — consistent light surfaces and dark readable typography across every admin route */
-.admin-shell [class*="bg-"],
-.admin-page [class*="bg-"] {
-  background-color: #ffffff !important;
-  background-image: none !important;
-  color: #252525 !important;
+/* NOVATEK unified light theme — preserve component structure, unify colors without flattening every surface */
+.admin-shell, .admin-page {
+  color: #20242b !important;
 }
-.admin-shell [class*="text-white"],
-.admin-page [class*="text-white"],
-.admin-shell [class*="text-gray-"],
-.admin-page [class*="text-gray-"],
-.admin-shell [class*="text-slate-"],
-.admin-page [class*="text-slate-"],
-.admin-shell [class*="text-zinc-"],
-.admin-page [class*="text-zinc-"] {
+.admin-shell [class*="bg-"], .admin-page [class*="bg-"] {
+  color: #30343b;
+}
+/* Main cards and panels share one calm white surface */
+.admin-shell .admin-card, .admin-page .admin-card,
+.admin-shell .admin-stat, .admin-page .admin-stat,
+.admin-shell .admin-list-row, .admin-page .admin-list-row,
+.admin-shell .admin-search-results, .admin-page .admin-search-results,
+.admin-shell .admin-chart-heading, .admin-page .admin-chart-heading,
+.admin-shell .admin-range-control, .admin-page .admin-range-control,
+.admin-shell .admin-refresh-stamp, .admin-page .admin-refresh-stamp {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #20242b !important;
+  border-color: #e5e7eb !important;
+}
+.admin-shell .bg-surface, .admin-page .bg-surface {
+  background-color: #f7f8fa !important;
+}
+.admin-shell [class*="text-white"], .admin-page [class*="text-white"],
+.admin-shell [class*="text-gray-"], .admin-page [class*="text-gray-"],
+.admin-shell [class*="text-slate-"], .admin-page [class*="text-slate-"],
+.admin-shell [class*="text-zinc-"], .admin-page [class*="text-zinc-"] {
   color: #30343b !important;
 }
-/* Keep brand orange as a deliberate accent, not as a background theme */
-.admin-sidebar .admin-nav-item.active,
-.mobile-menu-panel .admin-nav-item.active,
-.admin-theme-toggle {
-  background: #fff1e6 !important;
-  color: #b54708 !important;
-  border-color: #fed7aa !important;
+/* Colored status chips stay softly tinted and readable */
+.admin-shell [class*="bg-green"], .admin-page [class*="bg-green"],
+.admin-shell [class*="bg-emerald"], .admin-page [class*="bg-emerald"] {
+  background-color: #ecfdf3 !important; color: #166534 !important;
 }
-.admin-action-dark,
-.admin-shell button[class*="bg-orange"],
-.admin-page button[class*="bg-orange"] {
-  background: #f97316 !important;
-  color: #ffffff !important;
-  border-color: #f97316 !important;
+.admin-shell [class*="bg-red"], .admin-page [class*="bg-red"] {
+  background-color: #fef2f2 !important; color: #991b1b !important;
 }
-.admin-shell [class*="bg-green"], .admin-page [class*="bg-green"] { background-color: #ecfdf3 !important; color: #166534 !important; }
-.admin-shell [class*="bg-red"], .admin-page [class*="bg-red"] { background-color: #fef2f2 !important; color: #991b1b !important; }
 .admin-shell [class*="bg-yellow"], .admin-page [class*="bg-yellow"],
-.admin-shell [class*="bg-amber"], .admin-page [class*="bg-amber"] { background-color: #fffbeb !important; color: #92400e !important; }
-.admin-shell [class*="bg-blue"], .admin-page [class*="bg-blue"] { background-color: #eff6ff !important; color: #1d4ed8 !important; }
-.admin-shell [class*="bg-orange"], .admin-page [class*="bg-orange"] { background-color: #fff1e6 !important; color: #9a3412 !important; }
-.admin-shell [class*="border-"], .admin-page [class*="border-"] { border-color: #e5e7eb !important; }
+.admin-shell [class*="bg-amber"], .admin-page [class*="bg-amber"] {
+  background-color: #fffbeb !important; color: #92400e !important;
+}
+.admin-shell [class*="bg-blue/"], .admin-page [class*="bg-blue/"] {
+  background-color: #eff6ff !important; color: #1d4ed8 !important;
+}
+.admin-sidebar .admin-nav-item.active, .mobile-menu-panel .admin-nav-item.active,
+.admin-theme-toggle {
+  background: #fff1e6 !important; color: #b54708 !important; border-color: #fed7aa !important;
+}
+/* Orange is reserved for primary actions; keep their white label readable */
+.admin-action-dark, .admin-shell button[class*="bg-orange"], .admin-page button[class*="bg-orange"],
+.admin-shell button.bg-blue, .admin-page button.bg-blue {
+  background: #f97316 !important; color: #ffffff !important; border-color: #f97316 !important;
+}
+.admin-shell [class*="border-"], .admin-page [class*="border-"] {
+  border-color: #e5e7eb !important;
+}
