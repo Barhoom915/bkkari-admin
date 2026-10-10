@@ -723,3 +723,85 @@ html[data-admin-theme="dark"] .admin-page {
   background: #f7f8fa !important;
   color: #20242b !important;
 }
+
+
+/* STRICT LIGHT MODE — no dark panels anywhere in NOVATEK Admin */
+html, body, body * {
+  color-scheme: light !important;
+}
+html, body, #__next {
+  background: #f7f8fa !important;
+  color: #20242b !important;
+}
+.admin-shell, .admin-shell *,
+.admin-content, .admin-content *,
+.admin-page, .admin-page *,
+.admin-route-transition, .admin-route-transition * {
+  --tw-bg-opacity: 1;
+}
+.admin-shell,
+.admin-content,
+.admin-main,
+.admin-page,
+.admin-route-transition,
+.admin-login-screen {
+  background: #f7f8fa !important;
+  background-image: none !important;
+  color: #20242b !important;
+}
+.admin-shell [class*="bg-black"],
+.admin-shell [class*="bg-[#0"],
+.admin-shell [class*="bg-[#1"],
+.admin-shell [class*="bg-[#2"],
+.admin-shell [class*="bg-gray-9"],
+.admin-shell [class*="bg-slate-9"],
+.admin-shell [class*="bg-zinc-9"],
+.admin-page [class*="bg-black"],
+.admin-page [class*="bg-[#0"],
+.admin-page [class*="bg-[#1"],
+.admin-page [class*="bg-[#2"],
+.admin-page [class*="bg-gray-9"],
+.admin-page [class*="bg-slate-9"],
+.admin-page [class*="bg-zinc-9"] {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #20242b !important;
+  border-color: #e5e7eb !important;
+}
+.admin-shell [class*="text-white"],
+.admin-shell [class*="text-gray-1"],
+.admin-shell [class*="text-gray-2"],
+.admin-shell [class*="text-slate-1"],
+.admin-shell [class*="text-slate-2"],
+.admin-page [class*="text-white"],
+.admin-page [class*="text-gray-1"],
+.admin-page [class*="text-gray-2"],
+.admin-page [class*="text-slate-1"],
+.admin-page [class*="text-slate-2"] {
+  color: #20242b !important;
+}
+.admin-sidebar, .admin-topbar, .admin-mobile-header,
+.mobile-menu-panel, .admin-login-card, .admin-card, .admin-stat,
+.admin-hero, .stock-alert, .admin-search-results, .admin-search-empty,
+.admin-list-row, .admin-nav-item, .admin-quick-link,
+.admin-chart-heading, .admin-range-control, .admin-refresh-stamp,
+.admin-error-panel, .admin-bars, .admin-bar-item {
+  background: #ffffff !important;
+  background-image: none !important;
+  color: #20242b !important;
+  border-color: #e5e7eb !important;
+}
+.admin-sidebar .admin-nav-item.active {
+  background: #fff1e6 !important;
+  color: #b54708 !important;
+}
+.admin-login-screen {
+  background: #f7f8fa !important;
+}
+.admin-login-card {
+  box-shadow: 0 12px 40px rgba(15,23,42,.08) !important;
+}
+.admin-hero-orb, .login-glow, .login-glow-one, .login-glow-two {
+  background: #fff1e6 !important;
+  box-shadow: none !important;
+}
