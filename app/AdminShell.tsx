@@ -30,7 +30,7 @@ const navItems = [
 ];
 
 export default function AdminShell({ children }: { children: ReactNode }) {
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null);
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,15 +56,28 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      setUser(data.user);
-      if (data.user) {
-        const r = await fetch('/api/admin/admins?mode=me', { cache: 'no-store' });
-        setAuthorized(r.ok);
-      }
+    // Initialize Supabase only in the browser, after mount, so Next.js can
+    // prerender routes such as /_not-found without requiring browser env config.
+    try {
+      const client = createClient();
+      setSupabase(client);
+      client.auth.getUser().then(async ({ data, error }) => {
+        if (error) console.error("Supabase session lookup failed:", error.message);
+        setUser(data.user);
+        if (data.user) {
+          const r = await fetch('/api/admin/admins?mode=me', { cache: 'no-store' });
+          setAuthorized(r.ok);
+        }
+        setLoading(false);
+      }).catch((error) => {
+        console.error("Supabase initialization failed:", error);
+        setLoading(false);
+      });
+    } catch (error) {
+      console.error("Supabase client unavailable. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.", error);
       setLoading(false);
-    });
-  }, [supabase]);
+    }
+  }, []);
 
   useEffect(() => {
     if (!authorized) return;
@@ -107,13 +120,17 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }, [globalSearch, authorized]);
 
   async function handleLogin() {
+    if (!supabase) {
+      window.alert("الاتصال غير جاهز. تأكد من إعداد NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_ANON_KEY في Vercel ثم أعد تحميل الصفحة.");
+      return;
+    }
     const redirectTo = `${window.location.origin}/auth/callback`;
     await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
   }
 
   async function handleLogout() {
     if (!window.confirm("⚠️ تحذير\n\nهل تريد تسجيل الخروج من لوحة التحكم؟")) return;
-    await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut();
     window.location.reload();
   }
 
