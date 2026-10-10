@@ -88,6 +88,27 @@ async function getInventory() {
       const model = envValue("ASHNA_PRODUCT_MODEL", "ASHNA_MODEL");
       return { id:p.id,name:p.name,category:p.category,configured:true,envName:found.name,state:base && model ? "configured" : "partial",checkedAt:new Date().toISOString(),detail:base && model ? "مفتاح + endpoint + موديل موجودة. لم يُنفّذ اختبار اتصال لأن توافق Ashna يعتمد على endpoint الحساب الفعلي؛ جرّب مساعد المنتجات لتأكيد نجاح الاستدعاء." : "المفتاح موجود، لكن مساعد المنتجات يحتاج ASHNA_BASE_URL (أو ASHNA_API_BASE_URL) و ASHNA_PRODUCT_MODEL (أو ASHNA_MODEL). لا يمكن تأكيد الاتصال بمجرد وجود المفتاح." };
     }
+    if (p.id === "syrimarket") {
+      const base = (envValue("SYRIMARKET_API_URL")?.value || "https://api.syrimarket.com").replace(/\/+$/, "");
+      const probe = await timed(async () => {
+        const headers = { Authorization: `Bearer ${found.value}`, Accept: "application/json" };
+        const profileResponse = await fetch(`${base}/client/api/v1/profile`, { headers, cache: "no-store", signal: AbortSignal.timeout(9000) });
+        const profile: any = await profileResponse.json().catch(() => ({}));
+        if (!profileResponse.ok || profile.success === false) {
+          const code = typeof profile.code === "number" ? profile.code : profileResponse.status;
+          throw new Error(`SyriMarket profile check failed (HTTP ${profileResponse.status}, code ${code})`);
+        }
+        const productsResponse = await fetch(`${base}/client/api/v1/catalog/products`, { headers, cache: "no-store", signal: AbortSignal.timeout(9000) });
+        const products: any = await productsResponse.json().catch(() => ({}));
+        if (!productsResponse.ok || products.success === false) {
+          const code = typeof products.code === "number" ? products.code : productsResponse.status;
+          throw new Error(`SyriMarket products check failed (HTTP ${productsResponse.status}, code ${code})`);
+        }
+        const list = Array.isArray(products.data) ? products.data : Array.isArray(products.products) ? products.products : Array.isArray(products.data?.products) ? products.data.products : null;
+        return { profileReachable: true, productsEndpointReachable: true, productCount: list ? list.length : null };
+      });
+      return { id:p.id,name:p.name,category:p.category,configured:true,envName:found.name,state:probe.ok?"connected":"error",latencyMs:probe.ms,checkedAt:new Date().toISOString(),data:probe.ok?probe.data:null,error:probe.ok?null:probe.error,detail:probe.ok?"نجح فحص واجهة الحساب والمنتجات دون تنفيذ أي عملية شراء.":probe.error };
+    }
     if (p.id === "google-ai") {
       const probe = await timed(async () => {
         const url = new URL("https://generativelanguage.googleapis.com/v1beta/models"); url.searchParams.set("key", found.value);
