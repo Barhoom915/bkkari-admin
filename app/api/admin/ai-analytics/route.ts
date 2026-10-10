@@ -3,9 +3,11 @@ import { getAdminSession, getServiceClient } from "@/app/lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
+const noStoreHeaders = { "Cache-Control": "no-store, max-age=0" };
+
 export async function GET(request: Request) {
   const admin = await getAdminSession();
-  if (!admin) return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+  if (!admin) return NextResponse.json({ error: "غير مصرح" }, { status: 401, headers: noStoreHeaders });
 
   const url = new URL(request.url);
   const allowed = new Set(["7", "30", "90"]);
@@ -29,7 +31,7 @@ export async function GET(request: Request) {
         error: missing ? "جدول تحليلات الذكاء الاصطناعي غير موجود بعد. طبّق ترحيل V98.28 في Supabase أولاً." : "تعذر قراءة سجل الذكاء الاصطناعي.",
         details: process.env.NODE_ENV === "development" ? error.message : undefined,
         days,
-      }, { status: missing ? 200 : 500 });
+      }, { status: missing ? 200 : 500, headers: noStoreHeaders });
     }
 
     const rows = data || [];
@@ -64,13 +66,13 @@ export async function GET(request: Request) {
         costEvents: costs.length,
         estimatedCostEvents: rows.filter((r: any) => r.cost_is_estimate && r.cost_usd != null).length,
         tokenCoverage: rows.length ? knownTokens / rows.length : 0,
-        averageLatencyMs: rows.length ? Math.round(sum("latency_ms") / rows.length) : 0,
+        averageLatencyMs: (() => { const measured = rows.filter((r: any) => r.latency_ms != null); return measured.length ? Math.round(measured.reduce((n: number, r: any) => n + Number(r.latency_ms), 0) / measured.length) : 0; })(),
       },
       providers: [...providers.values()].sort((a, b) => b.requests - a.requests),
       events: rows,
       note: "التكلفة المعروضة هي مجموع التكاليف المسجلة فقط، وليست رصيد مزود الخدمة أو فاتورته الرسمية.",
-    });
+    }, { headers: noStoreHeaders });
   } catch {
-    return NextResponse.json({ configured: false, error: "تعذر الاتصال بقاعدة البيانات أو إعدادات الخدمة غير مكتملة.", days }, { status: 500 });
+    return NextResponse.json({ configured: false, error: "تعذر الاتصال بقاعدة البيانات أو إعدادات الخدمة غير مكتملة.", days }, { status: 500, headers: noStoreHeaders });
   }
 }
