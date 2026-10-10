@@ -63,17 +63,42 @@ async function getInventory() {
       : Promise.resolve({ ok: false as const, ms: 0, error: "إعدادات Supabase غير مكتملة" }),
   ]);
   const optional = [
+    { id: "google-ai", name: "Google AI Studio · Gemini", category: "ذكاء اصطناعي", vars: ["GEMINI_API_KEY", "GOOGLE_AI_API_KEY", "GOOGLE_GENERATIVE_AI_API_KEY"], note: "تم العثور على مفتاح Google؛ لم يتم اختبار الاتصال بعد." },
+    { id: "ashna", name: "Ashna AI", category: "ذكاء اصطناعي", vars: ["ASHNA_API_KEY", "ASHNA_API_TOKEN"], note: "تم العثور على إعداد Ashna؛ يلزم توثيق endpoint الرسمي لفحص الحساب والاستهلاك." },
+    { id: "groq", name: "Groq", category: "ذكاء اصطناعي", vars: ["GROQ_API_KEY"], note: "تم العثور على مفتاح Groq؛ جارٍ فحص endpoint الموديلات." },
+    { id: "openrouter", name: "OpenRouter", category: "ذكاء اصطناعي", vars: ["OPENROUTER_API_KEY"], note: "تم العثور على مفتاح OpenRouter؛ سيتم عرض معلومات الحساب التي يعيدها endpoint الرسمي." },
+    { id: "tavily", name: "Tavily", category: "بحث ومقارنة", vars: ["TAVILY_API_KEY"], note: "تم العثور على مفتاح Tavily. لم يتم إرسال بحث مدفوع لمجرد الفحص." },
+    { id: "syrimarket", name: "SyriMarket", category: "بحث ومقارنة ومنتجات رقمية", vars: ["SYRIMARKET_API_KEY", "SYRIMARKET_API_URL"], note: "تم العثور على إعداد SyriMarket؛ حالة الرصيد والاستخدام تعتمد على API المزود." },
+    { id: "sw-games", name: "SW-Games", category: "المنتجات والخدمات الرقمية", vars: ["SW_GAMES_API_KEY", "SW_GAMES_API_TOKEN"], note: "خدمة قادمة. لن تظهر متصلة قبل إعدادها وإجراء فحص فعلي." },
     { id: "openai", name: "OpenAI", category: "ذكاء اصطناعي", vars: ["OPENAI_API_KEY"], note: "وجود المفتاح لا يكشف الفوترة. تفاصيل الاستخدام تحتاج صلاحيات وواجهة Usage/Billing المناسبة للحساب." },
-    { id: "gemini", name: "Google Gemini", category: "ذكاء اصطناعي", vars: ["GEMINI_API_KEY", "GOOGLE_AI_API_KEY"], note: "المفتاح مضبوط؛ فحص الرصيد/الفوترة يعتمد على إعدادات Google Cloud وصلاحيات الحساب." },
     { id: "anthropic", name: "Anthropic", category: "ذكاء اصطناعي", vars: ["ANTHROPIC_API_KEY"], note: "المفتاح مضبوط؛ بيانات الفوترة لا تتوفر لكل المفاتيح عبر واجهة الاستخدام العادية." },
     { id: "stripe", name: "Stripe", category: "الدفع", vars: ["STRIPE_SECRET_KEY"], note: "لا يتم إجراء أي عملية دفع تجريبية؛ يلزم فحص آمن مخصص عند تفعيل التكامل." },
     { id: "resend", name: "Resend", category: "البريد الإلكتروني", vars: ["RESEND_API_KEY"], note: "المفتاح مضبوط؛ لم يتم إرسال بريد تجريبي لتجنب إرسال رسائل فعلية." },
     { id: "cloudinary", name: "Cloudinary", category: "الصور والملفات", vars: ["CLOUDINARY_API_KEY", "CLOUDINARY_URL"], note: "الإعداد موجود؛ فحص الحساب الكامل قد يحتاج API secret واسم الحساب." },
   ];
-  const knownOptional = optional.map(p => {
+  const knownOptional = await Promise.all(optional.map(async (p) => {
     const found = envValue(...p.vars);
-    return { id: p.id, name: p.name, category: p.category, configured: Boolean(found), envName: found?.name || p.vars.join(" أو "), state: found ? "configured" : "missing", detail: found ? p.note : `لم يتم العثور على ${p.vars.join(" / ")} في بيئة لوحة الإدارة.` };
-  });
+    if (!found) return { id: p.id, name: p.name, category: p.category, configured: false, envName: p.vars.join(" أو "), state: p.id === "sw-games" ? "planned" : "missing", detail: p.id === "sw-games" ? p.note : `لم يتم العثور على ${p.vars.join(" / ")} في بيئة لوحة الإدارة.` };
+    if (p.id === "google-ai") {
+      const probe = await timed(async () => {
+        const url = new URL("https://generativelanguage.googleapis.com/v1beta/models"); url.searchParams.set("key", found.value);
+        const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(8000) });
+        const body: any = await response.json().catch(() => ({}));
+        if (!response.ok || body.error) throw new Error(body.error?.message || `Google API HTTP ${response.status}`);
+        return { modelsAvailable: Array.isArray(body.models) ? body.models.length : null };
+      });
+      return { id:p.id,name:p.name,category:p.category,configured:true,envName:found.name,state:probe.ok?"connected":"error",latencyMs:probe.ms,checkedAt:new Date().toISOString(),data:probe.ok?probe.data:null,error:probe.ok?null:probe.error,detail:probe.ok?`نجح الاتصال بواجهة Google؛ عدد الموديلات المعادة: ${probe.data.modelsAvailable ?? "غير متاح"}.`:probe.error };
+    }
+    if (p.id === "groq") {
+      const probe = await timed(async () => { const response = await fetch("https://api.groq.com/openai/v1/models", { headers: { Authorization: `Bearer ${found.value}` }, cache:"no-store", signal:AbortSignal.timeout(8000) }); const body:any=await response.json().catch(()=>({})); if(!response.ok) throw new Error(body.error?.message||`Groq HTTP ${response.status}`); return { modelsAvailable:Array.isArray(body.data)?body.data.length:null }; });
+      return { id:p.id,name:p.name,category:p.category,configured:true,envName:found.name,state:probe.ok?"connected":"error",latencyMs:probe.ms,checkedAt:new Date().toISOString(),data:probe.ok?probe.data:null,error:probe.ok?null:probe.error,detail:probe.ok?`نجح فحص Groq. الموديلات المتاحة: ${probe.data.modelsAvailable ?? "غير متاح"}.`:probe.error };
+    }
+    if (p.id === "openrouter") {
+      const probe = await timed(async () => { const response=await fetch("https://openrouter.ai/api/v1/key",{headers:{Authorization:`Bearer ${found.value}`},cache:"no-store",signal:AbortSignal.timeout(8000)});const body:any=await response.json().catch(()=>({}));if(!response.ok||body.error)throw new Error(body.error?.message||`OpenRouter HTTP ${response.status}`);const d=body.data||{};return {label:d.label??null,limit:d.limit??null,usage:d.usage??null,remaining:d.limit_remaining??null,isFreeTier:d.is_free_tier??null}; });
+      return { id:p.id,name:p.name,category:p.category,configured:true,envName:found.name,state:probe.ok?"connected":"error",latencyMs:probe.ms,checkedAt:new Date().toISOString(),data:probe.ok?probe.data:null,error:probe.ok?null:probe.error,detail:probe.ok?"نجح فحص المفتاح وجلب معلومات الحد/الاستخدام المتاحة من OpenRouter.":probe.error };
+    }
+    return { id: p.id, name: p.name, category: p.category, configured: true, envName: found.name, state: "configured", detail: p.note };
+  }));
   const push = envValue("NEXT_PUBLIC_VAPID_PUBLIC_KEY") && envValue("VAPID_PRIVATE_KEY") && envValue("VAPID_SUBJECT");
   const inventory = [
     { ...serp },
