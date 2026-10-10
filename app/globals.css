@@ -805,3 +805,49 @@ html, body, #__next {
   background: #fff1e6 !important;
   box-shadow: none !important;
 }
+
+
+/* NOVATEK typography correction — readable dark headings on light surfaces */
+.admin-content h1,
+.admin-content h2,
+.admin-content h3,
+.admin-page h1,
+.admin-page h2,
+.admin-page h3,
+.admin-card h1,
+.admin-card h2,
+.admin-card h3,
+.admin-home-section-head h2,
+.admin-chart-heading,
+.admin-chart-heading h2,
+.admin-chart-heading h3,
+.admin-card > h2,
+.admin-card > h3,
+.admin-hero h1,
+.admin-hero h2,
+.admin-stat p,
+.admin-stat b,
+.admin-list-row b,
+.admin-list-row strong,
+.admin-quick-link b,
+.admin-quick-link strong,
+.admin-sidebar .admin-nav-item,
+.admin-mobile-header,
+.admin-content label,
+.admin-page label {
+  color: #252525 !important;
+}
+.admin-content p,
+.admin-page p,
+.admin-card p,
+.admin-stat small,
+.admin-hero p,
+.admin-home-section-head p {
+  color: #4b5563 !important;
+}
+.admin-hero span,
+.admin-page .section-kicker,
+.admin-content .section-kicker {
+  color: #c4510b !important;
+}
+.admin-stat b { font-weight: 850 !important; }
