@@ -414,3 +414,9 @@ button,a,input,select,textarea{ -webkit-tap-highlight-color:transparent }
 .admin-overview-columns{align-items:start!important}
 .admin-list-row{min-height:62px!important}
 @media(max-width:640px){.admin-hero{min-height:0!important;padding:21px!important;border-radius:23px!important}.admin-hero-orb{width:54px!important;height:54px!important;flex:0 0 54px!important;border-radius:18px!important;font-size:24px!important}.admin-hero p{font-size:12px!important}.admin-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.admin-stat{min-height:104px!important;padding:13px!important;gap:9px!important;border-radius:18px!important}.admin-stat>span{width:36px!important;height:36px!important;flex-basis:36px!important;font-size:17px!important;border-radius:12px!important}.admin-stat p{font-size:10px!important}.admin-stat b{font-size:18px!important}.admin-home-section-head h2{font-size:20px!important}.admin-quick-link{min-height:82px!important;padding:13px!important}.admin-quick-link>span{width:38px!important;height:38px!important;flex:0 0 38px!important}}
+
+@keyframes nova-suggestion-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes nova-ai-sparkle { 0%,100% { transform: scale(1) rotate(0deg); opacity: .7; } 50% { transform: scale(1.22) rotate(12deg); opacity: 1; } }
+.suggestion-pop { animation: nova-suggestion-in .28s ease-out both; backdrop-filter: blur(8px); }
+.ai-sparkle { display:inline-block; animation:nova-ai-sparkle 1.1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .suggestion-pop, .ai-sparkle { animation:none !important; } }
