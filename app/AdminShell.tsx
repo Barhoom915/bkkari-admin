@@ -36,6 +36,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [edgeTouchStart, setEdgeTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [alerts, setAlerts] = useState({ orders: 0, requests: 0, topups: 0, notifications: 0, total: 0 });
   const [globalSearch, setGlobalSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any>(null);
@@ -155,7 +156,25 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="admin-shell flex min-h-screen">
+    <div
+      className="admin-shell flex min-h-screen"
+      onTouchStart={(event) => {
+        const touch = event.touches[0];
+        if (window.innerWidth < 640 && touch.clientX >= window.innerWidth - 28) {
+          setEdgeTouchStart({ x: touch.clientX, y: touch.clientY });
+        } else {
+          setEdgeTouchStart(null);
+        }
+      }}
+      onTouchEnd={(event) => {
+        if (!edgeTouchStart || window.innerWidth >= 640) return;
+        const touch = event.changedTouches[0];
+        const deltaX = edgeTouchStart.x - touch.clientX;
+        const deltaY = Math.abs(edgeTouchStart.y - touch.clientY);
+        if (deltaX > 65 && deltaY < 85) setMobileOpen(true);
+        setEdgeTouchStart(null);
+      }}
+    >
       <aside className="admin-sidebar hidden w-64 shrink-0 sm:flex sm:flex-col">
         <div className="admin-brand flex items-center gap-2 border-b border-line p-5">
           <img src="/brand/novatek-logo.png" alt="NOVATEK" className="h-8 w-8" />
