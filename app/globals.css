@@ -508,3 +508,19 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
 }
+
+
+/* Persistent NOVATEK theme switch */
+.admin-theme-toggle{border:1px solid var(--line,#5b4535);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;background:rgba(249,115,22,.12);color:var(--text,#fff);transition:transform .2s ease,background .2s ease}
+.admin-theme-toggle:hover{transform:translateY(-1px);background:rgba(249,115,22,.22)}
+html[data-admin-theme="light"] body{background:#fffaf6!important;color:#211710!important}
+html[data-admin-theme="light"] .admin-shell{background:radial-gradient(ellipse at 15% 0%,rgba(249,115,22,.08),transparent 45%),#fffaf6!important;color:#211710!important}
+html[data-admin-theme="light"] .admin-sidebar,html[data-admin-theme="light"] .admin-topbar,html[data-admin-theme="light"] .admin-mobile-header,html[data-admin-theme="light"] .admin-login-card{background:rgba(255,255,255,.78)!important;color:#211710!important;border-color:#ead9ca!important}
+html[data-admin-theme="light"] .admin-content{color:#211710!important}
+html[data-admin-theme="light"] .admin-shell [class*="bg-[#"],html[data-admin-theme="light"] .admin-shell [class*="bg-black"]{background-color:rgba(255,255,255,.72)!important}
+html[data-admin-theme="light"] .admin-shell [class*="text-white"],html[data-admin-theme="light"] .admin-shell [class*="text-gray-"],html[data-admin-theme="light"] .admin-shell [class*="text-slate-"]{color:#302218!important}
+html[data-admin-theme="light"] .admin-shell input,html[data-admin-theme="light"] .admin-shell textarea,html[data-admin-theme="light"] .admin-shell select{background:#fff!important;color:#211710!important;border-color:#e6d5c7!important}
+html[data-admin-theme="light"] .admin-nav-item{color:#48372a!important}
+html[data-admin-theme="light"] .admin-nav-item.active{background:rgba(249,115,22,.14)!important;color:#c2410c!important}
+html[data-admin-theme="light"] .mobile-menu-panel{background:rgba(255,250,246,.96)!important;color:#211710!important}
+@media(prefers-reduced-motion:reduce){.admin-theme-toggle{transition:none}}
