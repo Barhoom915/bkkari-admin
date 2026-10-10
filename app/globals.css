@@ -579,3 +579,48 @@ html[data-admin-theme="light"] .mobile-menu-panel {
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
 }
+
+
+/* FINAL SIDEBAR OVERRIDE — light translucent NOVATEK Liquid Glass */
+.admin-sidebar {
+  background: rgba(255, 250, 246, .70) !important;
+  background-image: linear-gradient(145deg, rgba(255,255,255,.76), rgba(255,244,234,.48)) !important;
+  color: #302218 !important;
+  border-left: 1px solid rgba(249,115,22,.22) !important;
+  box-shadow: -12px 0 40px rgba(83,45,16,.08), inset -1px 0 0 rgba(255,255,255,.65) !important;
+  backdrop-filter: blur(30px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(165%) !important;
+}
+.admin-sidebar .admin-brand { border-color: rgba(249,115,22,.16) !important; }
+.admin-sidebar .admin-brand .gold-shine {
+  color: #302218 !important;
+  background: none !important;
+  -webkit-text-fill-color: #302218 !important;
+}
+.admin-sidebar .admin-brand small { color: #c4530b !important; }
+.admin-sidebar .admin-nav-item {
+  color: #594536 !important;
+  background: rgba(255,255,255,.28) !important;
+  border-color: rgba(249,115,22,.08) !important;
+  box-shadow: none !important;
+}
+.admin-sidebar .admin-nav-item:hover {
+  color: #38271c !important;
+  background: rgba(255,255,255,.62) !important;
+  border-color: rgba(249,115,22,.18) !important;
+}
+.admin-sidebar .admin-nav-item.active {
+  color: #a94708 !important;
+  background: rgba(249,115,22,.16) !important;
+  border-color: rgba(249,115,22,.28) !important;
+  box-shadow: inset -3px 0 0 #f0821e !important;
+}
+.admin-sidebar .admin-nav-item.active .admin-nav-badge {
+  background: #f0821e !important;
+  color: #fff !important;
+}
+.admin-sidebar .admin-logout {
+  color: #9f3412 !important;
+  background: rgba(255,255,255,.35) !important;
+  border-color: rgba(249,115,22,.18) !important;
+}
