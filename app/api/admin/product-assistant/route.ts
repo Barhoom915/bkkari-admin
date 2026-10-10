@@ -11,6 +11,7 @@ function openAIProvider(args: {
 }): Promise<ProviderResult> {
   return fetch(args.url, {
     method: 'POST',
+    signal: AbortSignal.timeout(25000),
     headers: {
       Authorization: `Bearer ${args.key}`,
       'Content-Type': 'application/json',
@@ -39,8 +40,8 @@ async function getProviders(prompt: string): Promise<Array<() => Promise<Provide
   const openrouter = process.env.OPENROUTER_API_KEY;
   const gemini = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   // Ashna is supported only when its account provides an OpenAI-compatible API endpoint.
-  const ashnaKey = process.env.ASHNA_API_KEY;
-  const ashnaBase = process.env.ASHNA_BASE_URL?.replace(/\/+$/, '');
+  const ashnaKey = process.env.ASHNA_API_KEY || process.env.ASHNA_API_TOKEN;
+  const ashnaBase = (process.env.ASHNA_BASE_URL || process.env.ASHNA_API_BASE_URL)?.replace(/\/+$/, '');
   const ashnaModel = process.env.ASHNA_PRODUCT_MODEL || process.env.ASHNA_MODEL;
 
   if (groq) providers.push(() => openAIProvider({
@@ -67,6 +68,7 @@ async function getProviders(prompt: string): Promise<Array<() => Promise<Provide
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': gemini },
+        signal: AbortSignal.timeout(25000),
         body: JSON.stringify({
           generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
           contents: [{ parts: [{ text: prompt }] }],
@@ -157,8 +159,15 @@ export async function POST(request: Request) {
           failures.push(`${result.provider}: empty response`);
           continue;
         }
-        const parsed = JSON.parse(raw);
-        return NextResponse.json({ data: { ...parsed, provider: result.provider, fallbackUsed: failures.length > 0 } });
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        const parsed = JSON.parse(cleaned);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('AI response was not a JSON object');
+        if (action === 'review') {
+          parsed.suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions.filter((item: any) => item && typeof item.field === 'string' && typeof item.reason === 'string').map((item: any) => ({ ...item, proposed: typeof item.proposed === 'string' ? item.proposed : '' })) : [];
+          parsed.issues = Array.isArray(parsed.issues) ? parsed.issues.filter((x: any) => typeof x === 'string') : [];
+          parsed.missing = Array.isArray(parsed.missing) ? parsed.missing.filter((x: any) => typeof x === 'string') : [];
+        }
+        return NextResponse.json({ data: { ...parsed, provider: result.provider, fallbackUsed: failures.length > 0, failedProviders: failures } });
       } catch (error) {
         console.error(`[product-assistant:${result.provider}] invalid response`, error);
         failures.push(`${result.provider}: invalid response`);
