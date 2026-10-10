@@ -420,3 +420,12 @@ button,a,input,select,textarea{ -webkit-tap-highlight-color:transparent }
 .suggestion-pop { animation: nova-suggestion-in .28s ease-out both; backdrop-filter: blur(8px); }
 .ai-sparkle { display:inline-block; animation:nova-ai-sparkle 1.1s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .suggestion-pop, .ai-sparkle { animation:none !important; } }
+
+
+/* NOVATEK ADMIN V72.2.3 — light-first brand polish + aligned controls */
+.admin-hero{background:radial-gradient(circle at 8% 0,rgba(240,130,30,.12),transparent 30%),radial-gradient(circle at 90% 15%,rgba(46,139,216,.10),transparent 35%),linear-gradient(125deg,#fff 0%,#fff8f1 100%)!important;border:1px solid #f0e3d8!important;box-shadow:0 16px 42px rgba(0,0,0,.045)!important}
+.admin-hero h1{color:#171717!important}.admin-hero p{color:#6b7280!important}.admin-hero span,.section-kicker{color:#d9680b!important}.admin-hero-orb{background:#fff!important;border:1px solid #f4dfcf!important;color:#f0821e!important;box-shadow:0 12px 30px rgba(15,42,74,.08)!important}
+.admin-action,.admin-link-btn{background:#fff!important;border-color:#eadfd6!important;color:#27221e!important}.admin-action-dark{background:#171717!important;border-color:#171717!important;color:#fff!important}
+input[type=checkbox],input[type=radio]{width:17px!important;height:17px!important;min-width:17px!important;min-height:17px!important;flex:0 0 17px!important;vertical-align:middle!important;accent-color:#f0821e!important;cursor:pointer!important;margin:0!important}
+label:has(>input[type=checkbox]),label:has(input[type=checkbox]){display:inline-flex;align-items:center;gap:9px}
+.suggestion-pop{border-color:rgba(240,130,30,.28)!important;background:rgba(255,248,241,.82)!important;box-shadow:0 8px 22px rgba(240,130,30,.06)}

@@ -106,9 +106,24 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'اكتب اسم المنتج أولاً حتى أقدر أساعدك بدقة.' }, { status: 400 });
     }
 
-    const prompt = `أنت مساعد كتابة ومراجعة منتجات لمتجر سوري اسمه NOVATEK. اكتب عربية واضحة واحترافية بلمسة تسويقية لطيفة وإيموجي قليل جداً (0-3 فقط عند ملاءمتها)، ويمكن استخدام تنسيق جذاب بعناوين ونقاط. التزم بالحقائق المقدمة فقط: ممنوع اختراع مواصفات أو ضمان أو أداء أو أبعاد أو ادعاءات. إذا كانت قيمة مثل دقة الشاشة تبدو ناقصة أو غريبة، لا تستبدلها بتخمين؛ اقترح التحقق منها، واذكر قيمة بديلة فقط إن كانت مؤكدة من البيانات المتاحة، وإلا اجعل proposed فارغاً واكتب سبباً واضحاً. أعد JSON صالحاً فقط بالشكل {"name":"...","description":"...","features":["..."],"missing":["..."],"issues":["..."],"suggestions":[{"field":"screen_resolution","label":"دقة الشاشة","current":"...","proposed":"...","reason":"...","confidence":"high|medium|verify"}]}. suggestions يجب أن تكون اقتراحات محددة مرتبطة بحقل موجود، ولا تملأ proposed إذا لم تكن متأكداً. action=${action}. إذا كان action=description أنشئ وصفاً جذاباً اعتماداً على الحقائق فقط، بتنسيق سهل القراءة وإيموجي قليل. إذا كان action=features رتّب الميزات بنقاط واضحة. إذا كان action=review لا تعِد كتابة حقول المنتج ولا تفرض التعديلات؛ أعطِ اقتراحات منفصلة فقط، مع الملاحظات والنواقص. لا تغيّر السعر أو المخزون. البيانات: ${JSON.stringify(facts)}`;
+    const prompt = `أنت مدقق مواصفات ومساعد كتابة منتجات لمتجر NOVATEK. افحص كل الحقول وليس الشاشة فقط: الاسم، الشركة، الموديل، المعالج CPU، RAM، التخزين، GPU، حجم الشاشة ودقتها، حالة الجهاز، صحة البطارية، الضمان، التصنيف، الوصف والميزات. أعد JSON صالحاً فقط بالشكل {"name":"...","description":"...","features":["..."],"missing":["..."],"issues":["..."],"suggestions":[{"field":"cpu","label":"المعالج","current":"...","proposed":"...","reason":"...","confidence":"high|medium|verify"}]}. افحص كل معلومة بحثاً عن نقص أو صياغة غير معيارية أو تناقض أو خطأ محتمل، وأعطِ اقتراحاً ملاصقاً للحقل المناسب. ممنوع اختراع مواصفات أو استبدال موديل بمعالج آخر بالتخمين؛ مثال i5 10U لا يعني تلقائياً i5-10850U، ولا تقترح رقماً محدداً إلا إذا كان مؤكداً من مصدر موثوق مرفق ضمن البيانات أو من معرفة مؤكدة جداً. إذا لم تتأكد، اجعل proposed فارغاً واشرح ضرورة التحقق من موديل الجهاز الكامل/مصدر الشركة. لا تدّعِ أنك بحثت على الإنترنت ما لم تستخدم أداة بحث فعلية. اقتراحات التصحيح تشمل كل الحقول ذات الصلة، لا تقتصر على الشاشة. لا تملأ اقتراحاً لمجرد تغيير القيمة؛ أظهره فقط إذا توجد فائدة حقيقية. اللغة عربية واضحة واحترافية بلمسة تسويقية سورية، والإيموجي خفيف (0-3). action=${action}. إذا كان action=description أنشئ وصفاً جذاباً من الحقائق الموجودة فقط. إذا كان action=features رتّب الميزات من المعلومات الموجودة فقط. إذا كان action=review لا تعِد كتابة الحقول ولا تطبق تعديلات؛ أعطِ اقتراحات منفصلة وملاحظات ونواقص. لا تغيّر السعر أو المخزون أو الضمان. البيانات: ${JSON.stringify(facts)}`;
 
     const providers = await getProviders(prompt);
+    // Rotate the starting provider between requests so Groq is not always the first choice.
+    if (providers.length > 1) {
+      const configuredOrder = (process.env.AI_PRODUCT_PROVIDER_ORDER || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
+      if (configuredOrder.length) {
+        const rank = (provider: () => Promise<ProviderResult>) => {
+          const name = (provider as any).__providerName || '';
+          const idx = configuredOrder.indexOf(name.toLowerCase());
+          return idx < 0 ? 999 : idx;
+        };
+        providers.sort((a, b) => rank(a) - rank(b));
+      } else {
+        const start = Math.floor(Date.now() / 1000) % providers.length;
+        providers.push(...providers.splice(0, start));
+      }
+    }
     if (!providers.length) {
       return NextResponse.json({
         error: 'ما لقيت مفاتيح AI متاحة في بيئة الإدارة. أضف GROQ_API_KEY أو OPENROUTER_API_KEY أو GEMINI_API_KEY إلى Environment Variables في Vercel، ثم أعد النشر.',
