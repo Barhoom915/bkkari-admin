@@ -526,38 +526,56 @@ html[data-admin-theme="light"] .mobile-menu-panel{background:rgba(255,250,246,.9
 @media(prefers-reduced-motion:reduce){.admin-theme-toggle{transition:none}}
 
 
-/* NOVATEK Liquid Glass accessibility fixes */
+/* NOVATEK Liquid Glass — transparent surfaces override legacy dark rules */
 .stock-alert {
-  background: linear-gradient(135deg, rgba(255,255,255,.94), rgba(255,247,239,.86)) !important;
+  background: rgba(255, 250, 245, .58) !important;
   color: #26180f !important;
-  border: 1px solid rgba(249,115,22,.24) !important;
-  box-shadow: 0 12px 30px rgba(72,39,16,.07), inset 0 1px 0 rgba(255,255,255,.9) !important;
-  backdrop-filter: blur(18px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(140%) !important;
+  border: 1px solid rgba(249,115,22,.30) !important;
+  box-shadow: 0 8px 28px rgba(50,25,8,.06), inset 0 1px 0 rgba(255,255,255,.6) !important;
+  backdrop-filter: blur(22px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(150%) !important;
 }
 .stock-alert b, .stock-alert p { color: #38271c !important; }
 .stock-alert strong {
-  color: #b45309 !important;
+  color: #a94708 !important;
   background: rgba(249,115,22,.12) !important;
-  border: 1px solid rgba(249,115,22,.2) !important;
+  border: 1px solid rgba(249,115,22,.22) !important;
 }
 .stock-alert.danger {
-  background: linear-gradient(135deg, rgba(255,255,255,.97), rgba(255,241,238,.92)) !important;
-  border-color: rgba(220,38,38,.25) !important;
+  background: rgba(255, 245, 244, .62) !important;
+  border-color: rgba(220,38,38,.28) !important;
 }
-.stock-alert.danger strong { color: #b91c1c !important; background: #fee2e2 !important; }
-.mobile-menu-panel {
-  background: rgba(255,250,246,.88) !important;
+.stock-alert.danger strong { color: #b91c1c !important; background: rgba(254,226,226,.75) !important; }
+
+/* Override older #101010 mobile menu declarations with true translucent glass. */
+.mobile-menu-panel,
+html[data-admin-theme="light"] .mobile-menu-panel {
+  background: rgba(255, 250, 246, .62) !important;
   color: #271a12 !important;
-  border-color: rgba(249,115,22,.2) !important;
-  backdrop-filter: blur(28px) saturate(155%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(155%) !important;
-  box-shadow: -18px 0 55px rgba(66,36,15,.12), inset 1px 0 0 rgba(255,255,255,.85) !important;
+  border-color: rgba(249,115,22,.28) !important;
+  backdrop-filter: blur(30px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(165%) !important;
+  box-shadow: -18px 0 55px rgba(66,36,15,.10), inset 1px 0 0 rgba(255,255,255,.55) !important;
 }
-.mobile-menu-panel .admin-nav-item { color: #49372a !important; }
+.mobile-menu-panel .admin-nav-item {
+  color: #49372a !important;
+  background: rgba(255,255,255,.24) !important;
+  border-color: rgba(249,115,22,.12) !important;
+}
+.mobile-menu-panel .admin-nav-item:hover { background: rgba(255,255,255,.48) !important; }
 .mobile-menu-panel .admin-nav-item.active {
-  color: #b94708 !important;
-  background: rgba(249,115,22,.13) !important;
-  border-color: rgba(249,115,22,.24) !important;
+  color: #a94708 !important;
+  background: rgba(249,115,22,.17) !important;
+  border-color: rgba(249,115,22,.28) !important;
+  box-shadow: inset -3px 0 0 #f0821e !important;
 }
-.admin-mobile-overlay > button[aria-label="إغلاق القائمة"] { background: rgba(255,248,241,.42) !important; }
+.mobile-menu-panel .menu-close-btn {
+  background: rgba(255,255,255,.38) !important;
+  color: #49372a !important;
+  border-color: rgba(249,115,22,.22) !important;
+}
+.admin-mobile-overlay > button[aria-label="إغلاق القائمة"] {
+  background: rgba(255,255,255,.16) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
