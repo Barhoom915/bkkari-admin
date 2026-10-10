@@ -11,6 +11,7 @@ function openAIProvider(args: {
 }): Promise<ProviderResult> {
   return fetch(args.url, {
     method: 'POST',
+    signal: AbortSignal.timeout(25000),
     headers: {
       Authorization: `Bearer ${args.key}`,
       'Content-Type': 'application/json',
@@ -39,8 +40,8 @@ async function getProviders(prompt: string): Promise<Array<() => Promise<Provide
   const openrouter = process.env.OPENROUTER_API_KEY;
   const gemini = process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   // Ashna is supported only when its account provides an OpenAI-compatible API endpoint.
-  const ashnaKey = process.env.ASHNA_API_KEY;
-  const ashnaBase = process.env.ASHNA_BASE_URL?.replace(/\/+$/, '');
+  const ashnaKey = process.env.ASHNA_API_KEY || process.env.ASHNA_API_TOKEN;
+  const ashnaBase = (process.env.ASHNA_BASE_URL || process.env.ASHNA_API_BASE_URL)?.replace(/\/+$/, '');
   const ashnaModel = process.env.ASHNA_PRODUCT_MODEL || process.env.ASHNA_MODEL;
 
   if (groq) providers.push(() => openAIProvider({
@@ -67,6 +68,7 @@ async function getProviders(prompt: string): Promise<Array<() => Promise<Provide
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': gemini },
+        signal: AbortSignal.timeout(25000),
         body: JSON.stringify({
           generationConfig: { responseMimeType: 'application/json', temperature: 0.2 },
           contents: [{ parts: [{ text: prompt }] }],
@@ -99,7 +101,7 @@ export async function POST(request: Request) {
     const action = String(body.action || 'review');
     const product = body.product || {};
     const facts = Object.fromEntries(
-      ['name','brand','model','category','cpu','ram','storage','gpu','screen_size','screen_resolution','condition','battery_health','price','warranty_days','description','features']
+      ['name','brand','model','category','cpu','ram','storage','gpu','screen_size','screen_resolution','condition','battery_health','warranty_days','description','features']
         .map(key => [key, product[key] ?? '']),
     );
     if (!String(facts.name || '').trim()) {
@@ -109,21 +111,7 @@ export async function POST(request: Request) {
     const prompt = `أنت مدقق مواصفات ومساعد كتابة منتجات لمتجر NOVATEK. افحص كل الحقول وليس الشاشة فقط: الاسم، الشركة، الموديل، المعالج CPU، RAM، التخزين، GPU، حجم الشاشة ودقتها، حالة الجهاز، صحة البطارية، الضمان، التصنيف، الوصف والميزات. أعد JSON صالحاً فقط بالشكل {"name":"...","description":"...","features":["..."],"missing":["..."],"issues":["..."],"suggestions":[{"field":"cpu","label":"المعالج","current":"...","proposed":"...","reason":"...","confidence":"high|medium|verify"}]}. افحص كل معلومة بحثاً عن نقص أو صياغة غير معيارية أو تناقض أو خطأ محتمل، وأعطِ اقتراحاً ملاصقاً للحقل المناسب. ممنوع اختراع مواصفات أو استبدال موديل بمعالج آخر بالتخمين؛ مثال i5 10U لا يعني تلقائياً i5-10850U، ولا تقترح رقماً محدداً إلا إذا كان مؤكداً من مصدر موثوق مرفق ضمن البيانات أو من معرفة مؤكدة جداً. إذا لم تتأكد، اجعل proposed فارغاً واشرح ضرورة التحقق من موديل الجهاز الكامل/مصدر الشركة. لا تدّعِ أنك بحثت على الإنترنت ما لم تستخدم أداة بحث فعلية. اقتراحات التصحيح تشمل كل الحقول ذات الصلة، لا تقتصر على الشاشة. لا تملأ اقتراحاً لمجرد تغيير القيمة؛ أظهره فقط إذا توجد فائدة حقيقية. اللغة عربية واضحة واحترافية بلمسة تسويقية سورية، والإيموجي خفيف (0-3). action=${action}. إذا كان action=description أنشئ وصفاً جذاباً من الحقائق الموجودة فقط. إذا كان action=features رتّب الميزات من المعلومات الموجودة فقط. إذا كان action=review لا تعِد كتابة الحقول ولا تطبق تعديلات؛ أعطِ اقتراحات منفصلة وملاحظات ونواقص. لا تغيّر السعر أو المخزون أو الضمان. البيانات: ${JSON.stringify(facts)}`;
 
     const providers = await getProviders(prompt);
-    // Rotate the starting provider between requests so Groq is not always the first choice.
-    if (providers.length > 1) {
-      const configuredOrder = (process.env.AI_PRODUCT_PROVIDER_ORDER || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
-      if (configuredOrder.length) {
-        const rank = (provider: () => Promise<ProviderResult>) => {
-          const name = (provider as any).__providerName || '';
-          const idx = configuredOrder.indexOf(name.toLowerCase());
-          return idx < 0 ? 999 : idx;
-        };
-        providers.sort((a, b) => rank(a) - rank(b));
-      } else {
-        const start = Math.floor(Date.now() / 1000) % providers.length;
-        providers.push(...providers.splice(0, start));
-      }
-    }
+    // Keep a predictable provider order; each failed provider falls through to the next configured one.
     if (!providers.length) {
       return NextResponse.json({
         error: 'ما لقيت مفاتيح AI متاحة في بيئة الإدارة. أضف GROQ_API_KEY أو OPENROUTER_API_KEY أو GEMINI_API_KEY إلى Environment Variables في Vercel، ثم أعد النشر.',
@@ -131,6 +119,7 @@ export async function POST(request: Request) {
     }
 
     const failures: string[] = [];
+    const configuredNames = [process.env.GROQ_API_KEY ? 'Groq' : null, process.env.OPENROUTER_API_KEY ? 'OpenRouter' : null, (process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY) ? 'Gemini / Google AI Studio' : null, (process.env.ASHNA_API_KEY || process.env.ASHNA_API_TOKEN) && (process.env.ASHNA_BASE_URL || process.env.ASHNA_API_BASE_URL) && (process.env.ASHNA_PRODUCT_MODEL || process.env.ASHNA_MODEL) ? 'Ashna' : null].filter(Boolean) as string[];
     for (let providerIndex = 0; providerIndex < providers.length; providerIndex++) {
       const createRequest = providers[providerIndex];
       let result: ProviderResult;
@@ -138,7 +127,7 @@ export async function POST(request: Request) {
         result = await createRequest();
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Network error';
-        failures.push(`المزوّد رقم ${providerIndex + 1}: تعذر الاتصال (${message.slice(0, 120)})`);
+        failures.push(`${configuredNames[providerIndex] || `المزوّد رقم ${providerIndex + 1}`}: تعذر الاتصال (${message.slice(0, 120)})`);
         continue;
       }
 
@@ -157,8 +146,16 @@ export async function POST(request: Request) {
           failures.push(`${result.provider}: empty response`);
           continue;
         }
-        const parsed = JSON.parse(raw);
-        return NextResponse.json({ data: { ...parsed, provider: result.provider, fallbackUsed: failures.length > 0 } });
+        const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+        const parsed = JSON.parse(cleaned);
+        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('AI response was not a JSON object');
+        if (action === 'review') {
+          const editableFields = new Set(['name','brand','model','category','cpu','ram','storage','gpu','screen_size','screen_resolution','condition','battery_health','description','features']);
+          parsed.suggestions = Array.isArray(parsed.suggestions) ? parsed.suggestions.filter((item: any) => item && editableFields.has(item.field) && typeof item.reason === 'string').map((item: any) => ({ ...item, proposed: typeof item.proposed === 'string' ? item.proposed : '' })) : [];
+          parsed.issues = Array.isArray(parsed.issues) ? parsed.issues.filter((x: any) => typeof x === 'string') : [];
+          parsed.missing = Array.isArray(parsed.missing) ? parsed.missing.filter((x: any) => typeof x === 'string') : [];
+        }
+        return NextResponse.json({ data: { ...parsed, provider: result.provider, fallbackUsed: failures.length > 0, failedProviders: failures } });
       } catch (error) {
         console.error(`[product-assistant:${result.provider}] invalid response`, error);
         failures.push(`${result.provider}: invalid response`);

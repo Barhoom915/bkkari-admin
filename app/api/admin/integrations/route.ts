@@ -68,7 +68,7 @@ async function getInventory() {
   ]);
   const optional = [
     { id: "google-ai", name: "Google AI Studio · Gemini", category: "ذكاء اصطناعي", vars: ["GEMINI_API_KEY", "GOOGLE_AI_API_KEY", "GOOGLE_GENERATIVE_AI_API_KEY"], note: "تم العثور على مفتاح Google؛ لم يتم اختبار الاتصال بعد." },
-    { id: "ashna", name: "Ashna AI", category: "ذكاء اصطناعي", vars: ["ASHNA_API_KEY", "ASHNA_API_TOKEN"], note: "تم العثور على إعداد Ashna؛ يلزم توثيق endpoint الرسمي لفحص الحساب والاستهلاك." },
+    { id: "ashna", name: "Ashna AI", category: "ذكاء اصطناعي", vars: ["ASHNA_API_KEY", "ASHNA_API_TOKEN"], note: "يتطلب فحص الاتصال عنوان API متوافقاً مع OpenAI وموديل محدداً؛ لا يُفترض endpoint غير موثق." },
     { id: "groq", name: "Groq", category: "ذكاء اصطناعي", vars: ["GROQ_API_KEY"], note: "تم العثور على مفتاح Groq؛ جارٍ فحص endpoint الموديلات." },
     { id: "openrouter", name: "OpenRouter", category: "ذكاء اصطناعي", vars: ["OPENROUTER_API_KEY"], note: "تم العثور على مفتاح OpenRouter؛ سيتم عرض معلومات الحساب التي يعيدها endpoint الرسمي." },
     { id: "tavily", name: "Tavily", category: "بحث ومقارنة", vars: ["TAVILY_API_KEY"], note: "تم العثور على مفتاح Tavily. لم يتم إرسال بحث مدفوع لمجرد الفحص." },
@@ -83,6 +83,11 @@ async function getInventory() {
   const knownOptional = await Promise.all(optional.map(async (p) => {
     const found = envValue(...p.vars);
     if (!found) return { id: p.id, name: p.name, category: p.category, configured: false, envName: p.vars.join(" أو "), state: p.id === "sw-games" ? "planned" : "missing", detail: p.id === "sw-games" ? p.note : `لم يتم العثور على ${p.vars.join(" / ")} في بيئة نشر لوحة الإدارة. هذا لا يعني أن الخدمة متوقفة في المتجر؛ بيئة المتجر والإدارة منفصلتان على Vercel. أضف المتغيرات هنا فقط إذا أردت فحصها من لوحة الإدارة.` };
+    if (p.id === "ashna") {
+      const base = envValue("ASHNA_BASE_URL", "ASHNA_API_BASE_URL");
+      const model = envValue("ASHNA_PRODUCT_MODEL", "ASHNA_MODEL");
+      return { id:p.id,name:p.name,category:p.category,configured:true,envName:found.name,state:base && model ? "configured" : "partial",checkedAt:new Date().toISOString(),detail:base && model ? "مفتاح + endpoint + موديل موجودة. لم يُنفّذ اختبار اتصال لأن توافق Ashna يعتمد على endpoint الحساب الفعلي؛ جرّب مساعد المنتجات لتأكيد نجاح الاستدعاء." : "المفتاح موجود، لكن مساعد المنتجات يحتاج ASHNA_BASE_URL (أو ASHNA_API_BASE_URL) و ASHNA_PRODUCT_MODEL (أو ASHNA_MODEL). لا يمكن تأكيد الاتصال بمجرد وجود المفتاح." };
+    }
     if (p.id === "google-ai") {
       const probe = await timed(async () => {
         const url = new URL("https://generativelanguage.googleapis.com/v1beta/models"); url.searchParams.set("key", found.value);

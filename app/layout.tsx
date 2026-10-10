@@ -12,6 +12,11 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: "لوحة تحكم NOVATEK",
   description: "مركز العمليات والإدارة والتحليلات لمنظومة NOVATEK",
+  icons: {
+    icon: "/brand/novatek-logo.png",
+    shortcut: "/brand/novatek-logo.png",
+    apple: "/brand/novatek-logo.png",
+  },
   robots: { index: false, follow: false },
 };
 

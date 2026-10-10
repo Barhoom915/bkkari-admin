@@ -30,7 +30,7 @@ const navItems = [
 ];
 
 export default function AdminShell({ children }: { children: ReactNode }) {
-  const supabase = createClient();
+  const [supabase, setSupabase] = useState<ReturnType<typeof createClient> | null>(null);
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,17 +39,45 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const [alerts, setAlerts] = useState({ orders: 0, requests: 0, topups: 0, notifications: 0, total: 0 });
   const [globalSearch, setGlobalSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any>(null);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      setUser(data.user);
-      if (data.user) {
-        const r = await fetch('/api/admin/admins?mode=me', { cache: 'no-store' });
-        setAuthorized(r.ok);
-      }
+    const saved = window.localStorage.getItem("novatek-admin-theme");
+    const next = saved === "light" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.dataset.adminTheme = next;
+  }, []);
+
+  function toggleTheme() {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    document.documentElement.dataset.adminTheme = next;
+    window.localStorage.setItem("novatek-admin-theme", next);
+  }
+
+  useEffect(() => {
+    // Initialize Supabase only in the browser, after mount, so Next.js can
+    // prerender routes such as /_not-found without requiring browser env config.
+    try {
+      const client = createClient();
+      setSupabase(client);
+      client.auth.getUser().then(async ({ data, error }) => {
+        if (error) console.error("Supabase session lookup failed:", error.message);
+        setUser(data.user);
+        if (data.user) {
+          const r = await fetch('/api/admin/admins?mode=me', { cache: 'no-store' });
+          setAuthorized(r.ok);
+        }
+        setLoading(false);
+      }).catch((error) => {
+        console.error("Supabase initialization failed:", error);
+        setLoading(false);
+      });
+    } catch (error) {
+      console.error("Supabase client unavailable. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.", error);
       setLoading(false);
-    });
-  }, [supabase]);
+    }
+  }, []);
 
   useEffect(() => {
     if (!authorized) return;
@@ -92,13 +120,17 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   }, [globalSearch, authorized]);
 
   async function handleLogin() {
+    if (!supabase) {
+      window.alert("الاتصال غير جاهز. تأكد من إعداد NEXT_PUBLIC_SUPABASE_URL و NEXT_PUBLIC_SUPABASE_ANON_KEY في Vercel ثم أعد تحميل الصفحة.");
+      return;
+    }
     const redirectTo = `${window.location.origin}/auth/callback`;
     await supabase.auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
   }
 
   async function handleLogout() {
     if (!window.confirm("⚠️ تحذير\n\nهل تريد تسجيل الخروج من لوحة التحكم؟")) return;
-    await supabase.auth.signOut();
+    if (supabase) await supabase.auth.signOut();
     window.location.reload();
   }
 
@@ -150,7 +182,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
             {user.user_metadata?.avatar_url ? (
               <img src={user.user_metadata.avatar_url} alt="صورة الحساب" className="h-8 w-8 rounded-full object-cover ring-2 ring-white shadow-sm" />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue text-xs font-bold text-white">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange text-xs font-bold text-white">
                 {(user.user_metadata?.full_name || user.email || "A").slice(0, 1).toUpperCase()}
               </div>
             )}
@@ -165,8 +197,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
           })}
         </nav>
         {mobileOpen && <div className="admin-mobile-overlay fixed inset-0 z-[80] sm:hidden">
-          <button aria-label="إغلاق القائمة" onClick={()=>setMobileOpen(false)} className="absolute inset-0 bg-black/60" />
-          <aside className="mobile-menu-panel absolute right-0 top-0 h-full w-[min(86vw,340px)] overflow-y-auto border-l border-line bg-[#070b12] p-4 shadow-2xl" dir="rtl">
+          <button aria-label="إغلاق القائمة" onClick={()=>setMobileOpen(false)} className="absolute inset-0 bg-white/45 backdrop-blur-sm" />
+          <aside className="mobile-menu-panel absolute right-0 top-0 h-full w-[min(86vw,340px)] overflow-y-auto border-l border-line p-4 shadow-2xl" dir="rtl">
             <div className="mb-4 flex items-center justify-between border-b border-line pb-4">
               <div className="flex items-center gap-2"><img src="/brand/novatek-logo.png" alt="NOVATEK" className="h-8 w-8"/><b className="gold-shine text-sm">NOVATEK <small>ADMIN</small></b></div>
               <button onClick={()=>setMobileOpen(false)} className="menu-close-btn" aria-label="إغلاق القائمة">✕</button>
@@ -186,7 +218,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
               {![...(searchResults.orders||[]),...(searchResults.topups||[]),...(searchResults.requests||[]),...(searchResults.users||[])].length&&<div className="admin-search-empty">ما لقيت نتيجة مطابقة</div>}
             </div>}
           </div>
-          <div className="admin-topbar-user"><span>NOVATEK</span><span className="admin-online-dot"/></div>
+          <div className="admin-topbar-user"><button type="button" className="admin-theme-toggle" onClick={toggleTheme} aria-label={theme === "dark" ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن"} title={theme === "dark" ? "الوضع الفاتح" : "الوضع الداكن"}>{theme === "dark" ? "☀️ فاتح" : "🌙 داكن"}</button><span>NOVATEK</span><span className="admin-online-dot"/></div>
         </div>
         <div key={pathname} className="admin-route-transition">{children}</div>
       </div>
