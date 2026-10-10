@@ -40,11 +40,11 @@ export default function AdminShell({ children }: { children: ReactNode }) {
   const [alerts, setAlerts] = useState({ orders: 0, requests: 0, topups: 0, notifications: 0, total: 0 });
   const [globalSearch, setGlobalSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any>(null);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<"dark" | "light">("light");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("novatek-admin-theme");
-    const next = saved === "light" ? "light" : "dark";
+    const next = saved === "dark" ? "dark" : "light";
     setTheme(next);
     document.documentElement.dataset.adminTheme = next;
   }, []);
