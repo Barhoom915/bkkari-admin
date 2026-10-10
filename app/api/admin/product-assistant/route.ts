@@ -111,21 +111,7 @@ export async function POST(request: Request) {
     const prompt = `أنت مدقق مواصفات ومساعد كتابة منتجات لمتجر NOVATEK. افحص كل الحقول وليس الشاشة فقط: الاسم، الشركة، الموديل، المعالج CPU، RAM، التخزين، GPU، حجم الشاشة ودقتها، حالة الجهاز، صحة البطارية، الضمان، التصنيف، الوصف والميزات. أعد JSON صالحاً فقط بالشكل {"name":"...","description":"...","features":["..."],"missing":["..."],"issues":["..."],"suggestions":[{"field":"cpu","label":"المعالج","current":"...","proposed":"...","reason":"...","confidence":"high|medium|verify"}]}. افحص كل معلومة بحثاً عن نقص أو صياغة غير معيارية أو تناقض أو خطأ محتمل، وأعطِ اقتراحاً ملاصقاً للحقل المناسب. ممنوع اختراع مواصفات أو استبدال موديل بمعالج آخر بالتخمين؛ مثال i5 10U لا يعني تلقائياً i5-10850U، ولا تقترح رقماً محدداً إلا إذا كان مؤكداً من مصدر موثوق مرفق ضمن البيانات أو من معرفة مؤكدة جداً. إذا لم تتأكد، اجعل proposed فارغاً واشرح ضرورة التحقق من موديل الجهاز الكامل/مصدر الشركة. لا تدّعِ أنك بحثت على الإنترنت ما لم تستخدم أداة بحث فعلية. اقتراحات التصحيح تشمل كل الحقول ذات الصلة، لا تقتصر على الشاشة. لا تملأ اقتراحاً لمجرد تغيير القيمة؛ أظهره فقط إذا توجد فائدة حقيقية. اللغة عربية واضحة واحترافية بلمسة تسويقية سورية، والإيموجي خفيف (0-3). action=${action}. إذا كان action=description أنشئ وصفاً جذاباً من الحقائق الموجودة فقط. إذا كان action=features رتّب الميزات من المعلومات الموجودة فقط. إذا كان action=review لا تعِد كتابة الحقول ولا تطبق تعديلات؛ أعطِ اقتراحات منفصلة وملاحظات ونواقص. لا تغيّر السعر أو المخزون أو الضمان. البيانات: ${JSON.stringify(facts)}`;
 
     const providers = await getProviders(prompt);
-    // Rotate the starting provider between requests so Groq is not always the first choice.
-    if (providers.length > 1) {
-      const configuredOrder = (process.env.AI_PRODUCT_PROVIDER_ORDER || '').split(',').map(x => x.trim().toLowerCase()).filter(Boolean);
-      if (configuredOrder.length) {
-        const rank = (provider: () => Promise<ProviderResult>) => {
-          const name = (provider as any).__providerName || '';
-          const idx = configuredOrder.indexOf(name.toLowerCase());
-          return idx < 0 ? 999 : idx;
-        };
-        providers.sort((a, b) => rank(a) - rank(b));
-      } else {
-        const start = Math.floor(Date.now() / 1000) % providers.length;
-        providers.push(...providers.splice(0, start));
-      }
-    }
+    // Keep a predictable provider order; each failed provider falls through to the next configured one.
     if (!providers.length) {
       return NextResponse.json({
         error: 'ما لقيت مفاتيح AI متاحة في بيئة الإدارة. أضف GROQ_API_KEY أو OPENROUTER_API_KEY أو GEMINI_API_KEY إلى Environment Variables في Vercel، ثم أعد النشر.',
@@ -133,6 +119,7 @@ export async function POST(request: Request) {
     }
 
     const failures: string[] = [];
+    const configuredNames = [process.env.GROQ_API_KEY ? 'Groq' : null, process.env.OPENROUTER_API_KEY ? 'OpenRouter' : null, (process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY) ? 'Gemini / Google AI Studio' : null, (process.env.ASHNA_API_KEY || process.env.ASHNA_API_TOKEN) && (process.env.ASHNA_BASE_URL || process.env.ASHNA_API_BASE_URL) && (process.env.ASHNA_PRODUCT_MODEL || process.env.ASHNA_MODEL) ? 'Ashna' : null].filter(Boolean) as string[];
     for (let providerIndex = 0; providerIndex < providers.length; providerIndex++) {
       const createRequest = providers[providerIndex];
       let result: ProviderResult;
@@ -140,7 +127,7 @@ export async function POST(request: Request) {
         result = await createRequest();
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Network error';
-        failures.push(`المزوّد رقم ${providerIndex + 1}: تعذر الاتصال (${message.slice(0, 120)})`);
+        failures.push(`${configuredNames[providerIndex] || `المزوّد رقم ${providerIndex + 1}`}: تعذر الاتصال (${message.slice(0, 120)})`);
         continue;
       }
 
