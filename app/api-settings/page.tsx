@@ -6,11 +6,12 @@ type Provider = { id:string; name:string; category:string; configured:boolean; e
 const labels:Record<string,string>={connected:"متصل ويعمل",configured:"الإعداد موجود — لم يُفحص فعلياً",error:"فشل الاتصال",missing:"غير مضاف للإدارة",unknown:"الحالة غير معروفة",planned:"قريباً"};
 const classes:Record<string,string>={connected:"ok",configured:"configured",error:"error",missing:"missing",unknown:"unknown",planned:"configured"};
 const groups=[
- {id:"ai",title:"الذكاء الاصطناعي",subtitle:"4 خدمات للموديلات والردود الذكية",items:["google-ai","ashna","groq","openrouter"]},
+ {id:"ai",title:"الذكاء الاصطناعي",subtitle:"5 خدمات للموديلات والردود الذكية",items:["xkiro","google-ai","ashna","groq","openrouter"]},
  {id:"search",title:"البحث والمقارنة",subtitle:"مصادر البحث ومعلومات المقارنة",items:["serpapi","tavily","syrimarket"]},
  {id:"digital",title:"المنتجات والخدمات الرقمية",subtitle:"تعبئة رقمية ومزوّدون حاليون وقادمون",items:["satofill","syrimarket","sw-games"]},
 ];
 const catalog:Record<string,{name:string;category:string;desc:string;env:string;url:string;icon:string}>={
+ xkiro:{name:"xKiro · Mistral Large 4",category:"الذكاء الاصطناعي",desc:"فحص اتصال آمن بواجهة الموديلات دون استهلاك توكنات محادثة؛ الرصيد والحصة يظهران فقط عند توفرهما رسمياً.",env:"XKIRO_API_KEY",url:"https://xkiro.com/",icon:"🧠"},
  "google-ai":{name:"Google AI Studio · Gemini",category:"الذكاء الاصطناعي",desc:"مفتاح Google AI / Gemini وفحص واجهة الموديلات عند توافره.",env:"GEMINI_API_KEY أو GOOGLE_AI_API_KEY أو GOOGLE_GENERATIVE_AI_API_KEY",url:"https://aistudio.google.com/",icon:"✨"},
  ashna:{name:"Ashna AI",category:"الذكاء الاصطناعي",desc:"تكامل Ashna؛ تفاصيل الحساب والاستهلاك تعتمد على API الرسمية المتاحة.",env:"ASHNA_API_KEY أو ASHNA_API_TOKEN",url:"https://app.ashna.ai/",icon:"🧠"},
  groq:{name:"Groq",category:"الذكاء الاصطناعي",desc:"فحص آمن لنقطة الموديلات، مع حدود الاستخدام إن رجعتها واجهة الحساب.",env:"GROQ_API_KEY",url:"https://console.groq.com/",icon:"⚡"},
