@@ -111,7 +111,7 @@ async function getInventory() {
       return { id:p.id,name:p.name,category:p.category,configured:true,envName:found.name,state:probe.ok?"connected":"error",latencyMs:probe.ms,checkedAt:new Date().toISOString(),data:probe.ok?probe.data:null,error:probe.ok?null:probe.error,detail:probe.ok?"نجح فحص واجهة الحساب والمنتجات دون تنفيذ أي عملية شراء.":probe.error };
     }
     if (p.id === "xkiro") {
-      const base = (envValue("XKIRO_API_BASE_URL")?.value || "https://api.xkiro.com/v1").replace(/\\/+$/, "");
+      const base = (envValue("XKIRO_API_BASE_URL")?.value || "https://api.xkiro.com/v1").replace(/\/+$/, "");
       const probe = await timed(async () => {
         const response = await fetch(`${base}/models`, { headers: { Authorization: `Bearer ${found.value}` }, cache: "no-store", signal: AbortSignal.timeout(9000) });
         const body: any = await response.json().catch(() => ({}));
